@@ -1018,19 +1018,22 @@ function setNodeStatus(ok, url) {
 async function startLogin() {
   if (!S.nodeUrl) { toast('Set a node URL first', 'err'); return; }
 
-  const returnUrl = location.href.split('?')[0];
+  // returnUrl must point back HERE (the client page) so params land in boot()
+  const returnUrl = location.origin + location.pathname;
   const nodeId    = await findCurrentNodeId();
 
   if (nodeId) {
     try {
-      const r = await anonFetch('POST', `/api/auth/node/${nodeId}/generate-key`);
-      // cloudlightLoginUrl already has nodeKey + nodeDomain baked in
-      location.href = r.cloudlightLoginUrl + '&returnUrl=' + encodeURIComponent(returnUrl);
+      // Pass returnUrl in the body so the node builds the Cloudlight URL
+      // pointing back to this page instead of hardcoding /auth/complete
+      const r = await anonFetch('POST', `/api/auth/node/${nodeId}/generate-key`, { returnUrl });
+      // r.cloudlightLoginUrl already contains nodeKey, nodeDomain, and our returnUrl
+      location.href = r.cloudlightLoginUrl;
       return;
     } catch (e) { /* fall through to manual */ }
   }
 
-  // Fallback: open Cloudlight directly, show manual complete section
+  // Fallback: go straight to Cloudlight with returnUrl = this page
   revealComplete();
   const dest = `${CFG.authBase}/api/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
   window.open(dest, '_blank');
