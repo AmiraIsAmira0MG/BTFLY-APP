@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTFLY — Social</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --ink:        #05060a;
+  --ink2:       #0c0d14;
+  --ink3:       #131421;
+  --glass:      rgba(13,14,21,0.85);
+  --rim:        rgba(255,255,255,0.06);
+  --rim2:       rgba(255,255,255,0.03);
+  --text:       #dde0ec;
+  --text2:      #7c8099;
+  --text3:      #454660;
+  --teal:       #00e5c4;
+  --teal-dim:   rgba(0,229,196,0.12);
+  --teal-glow:  rgba(0,229,196,0.25);
+  --violet:     #9b7fff;
+  --violet-dim: rgba(155,127,255,0.12);
+  --rose:       #ff6fa0;
+  --rose-dim:   rgba(255,111,160,0.12);
+  --gold:       #f0c060;
+  --danger:     #ff4c6a;
+  --serif:      'Instrument Serif', Georgia, serif;
+  --mono:       'Geist Mono', 'Courier New', monospace;
+  --r:          2px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET + BASE
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════
+   AMBIENT BACKGROUND
+═══════════════════════════════════════════════ */
+#bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+#bg::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  top: -200px; left: -100px;
+  background: radial-gradient(circle, rgba(0,229,196,0.07) 0%, transparent 70%);
+  animation: drift1 20s ease-in-out infinite alternate;
+}
+#bg::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  bottom: -150px; right: 10%;
+  background: radial-gradient(circle, rgba(155,127,255,0.06) 0%, transparent 70%);
+  animation: drift2 25s ease-in-out infinite alternate;
+}
+.bg-orb {
+  position: absolute;
+  width: 300px; height: 300px;
+  top: 40%; left: 55%;
+  background: radial-gradient(circle, rgba(255,111,160,0.04) 0%, transparent 70%);
+  animation: drift3 18s ease-in-out infinite alternate;
+}
+@keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,80px) scale(1.15); } }
+@keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-40px,-60px) scale(1.1); } }
+@keyframes drift3 { from { transform: translate(0,0); } to { transform: translate(-80px,40px); } }
+
+/* scan lines */
+#bg-scan {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+#app {
+  position: relative; z-index: 1;
+  display: flex; height: 100vh; overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   VIEWS
+═══════════════════════════════════════════════ */
+.view { display: none; width: 100%; }
+.view.show { display: flex; }
+
+/* ═══════════════════════════════════════════════
+   AUTH VIEW
+═══════════════════════════════════════════════ */
+#v-auth {
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  min-height: 100vh;
+  gap: 0;
+}
+
+.auth-shell {
+  width: 420px;
+  border: 1px solid var(--rim);
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  padding: 0;
+  overflow: hidden;
+  animation: riseIn 0.5s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-top {
+  padding: 2.5rem 2.5rem 2rem;
+  border-bottom: 1px solid var(--rim);
+  position: relative;
+  overflow: hidden;
+}
+.auth-top::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--teal), var(--violet), var(--rose), transparent);
+}
+
+.auth-wordmark {
+  font-family: var(--serif);
+  font-size: 2.8rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.auth-wordmark .butterfly {
+  display: inline-block;
+  animation: flutter 3s ease-in-out infinite;
+}
+@keyframes flutter {
+  0%,100% { transform: scaleX(1) rotate(0deg); }
+  25%      { transform: scaleX(0.7) rotate(-5deg); }
+  75%      { transform: scaleX(0.7) rotate(5deg); }
+}
+
+.auth-sub {
+  margin-top: 0.5rem;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.auth-body { padding: 2rem 2.5rem; }
+
+.auth-node-row {
+  display: flex; gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-node-row input {
+  flex: 1;
+  background: var(--ink2);
+  border: 1px solid var(--rim);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 0.6rem 0.9rem;
+  outline: none;
+  border-radius: var(--r);
+  transition: border-color 0.2s;
+}
+.auth-node-row input:focus { border-color: var(--teal); }
+.auth-node-row input::placeholder { color: var(--text3); }
+
+.btn-teal {
+  background: var(--teal-dim);
+  border: 1px solid rgba(0,229,196,0.3);
+  color: var(--teal);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-radius: var(--r);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-teal:hover {
+  background: rgba(0,229,196,0.2);
+  box-shadow: 0 0 16px var(--teal-glow);
+}
+
+.auth-sign-in {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--rim);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.9rem 1.5rem;
+  cursor: pointer;
+  border-radius: var(--r);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.auth-sign-in::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, var(--teal-dim), var(--violet-dim));
+  opacity: 0; transition: opacity 0.25s;
+}
+.auth-sign-in:hover { border-color: var(--teal); }
+.auth-sign-in:hover::before { opacity: 1; }
+.auth-sign-in span { position: relative; z-index: 1; }
+
+.auth-node-status {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.node-dot-status {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+}
+.node-dot-status.ok { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+
+.auth-divider {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 1.25rem 0;
+  font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--rim);
+}
+
+.auth-complete { display: none; }
+.auth-complete.show { display: block; }
+
+.auth-complete .field-label {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 0.4rem;
+}
+
+.auth-complete input {
+  width: 100%;
+  background: var(--ink2);
+  border: 1px solid var(--rim);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 0.75rem;
+  outline: none;
+  border-radius: var(--r);
+  transition: border-color 0.2s;
+}
+.auth-complete input:focus { border-color: var(--violet); }
+.auth-complete input::placeholder { color: var(--text3); }
+
+/* ═══════════════════════════════════════════════
+   MAIN VIEW
+═══════════════════════════════════════════════ */
+#v-main {
+  flex-direction: row;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════ */
+.sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--rim);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: rgba(5,6,10,0.6);
+}
+
+.sb-logo {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--rim);
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.sb-logo .glyph { animation: flutter 4s ease-in-out infinite; display: inline-block; }
+
+.sb-nav { flex: 1; padding: 0.75rem 0; overflow-y: auto; }
+
+.sb-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.7rem 1.25rem;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.sb-item:hover { color: var(--text); background: var(--rim2); }
+.sb-item.on {
+  color: var(--teal);
+  border-left-color: var(--teal);
+  background: var(--teal-dim);
+}
+.sb-item .ico { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+
+.sb-footer {
+  border-top: 1px solid var(--rim);
+  padding: 1rem 1.25rem;
+}
+
+.sb-me {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+
+.ava {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; color: var(--ink);
+  flex-shrink: 0; overflow: hidden;
+}
+.ava img { width: 100%; height: 100%; object-fit: cover; }
+
+.sb-me-info { flex: 1; min-width: 0; }
+.sb-me-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-me-node { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.btn-out {
+  background: none; border: 1px solid var(--rim);
+  color: var(--text3); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.3rem 0.5rem; cursor: pointer; border-radius: var(--r);
+  transition: all 0.15s; flex-shrink: 0;
+}
+.btn-out:hover { color: var(--danger); border-color: var(--danger); }
+
+/* ═══════════════════════════════════════════════
+   COLUMN
+═══════════════════════════════════════════════ */
+.col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  border-right: 1px solid var(--rim);
+  max-width: 640px;
+}
+
+/* ═══════════════════════════════════════════════
+   COLUMN HEADER
+═══════════════════════════════════════════════ */
+.col-head {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+}
+
+.col-head-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════
+   PAGES (inside .col)
+═══════════════════════════════════════════════ */
+.page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.page.show { display: flex; }
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.scroll-area::-webkit-scrollbar { width: 3px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--rim); border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════
+   COMPOSE
+═══════════════════════════════════════════════ */
+.compose {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  display: flex; gap: 1rem;
+  flex-shrink: 0;
+}
+
+.compose-body { flex: 1; }
+
+.compose-ta {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.65;
+  resize: none;
+  outline: none;
+  min-height: 52px;
+}
+.compose-ta::placeholder { color: var(--text3); }
+
+.compose-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--rim);
+}
+
+.char-ct { font-size: 10px; color: var(--text3); }
+.char-ct.warn { color: var(--gold); }
+.char-ct.over { color: var(--danger); }
+
+/* ═══════════════════════════════════════════════
+   POSTS
+═══════════════════════════════════════════════ */
+.post {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  cursor: pointer;
+  transition: background 0.12s;
+  animation: fadeUp 0.25s ease forwards;
+  position: relative;
+}
+.post:hover { background: var(--rim2); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.post-hd {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+.post-meta { flex: 1; min-width: 0; }
+.post-author { font-size: 12px; font-weight: 500; color: var(--text); }
+.post-node   { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-time   { font-size: 10px; color: var(--text3); flex-shrink: 0; }
+
+.post-body {
+  font-size: 13px; line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.post-reply-to {
+  font-size: 10px; color: var(--text3);
+  padding: 0.3rem 0.6rem;
+  border-left: 1px solid var(--text3);
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
+}
+
+.post-actions {
+  display: flex; gap: 1.25rem;
+  margin-top: 0.75rem;
+}
+.pa {
+  display: flex; align-items: center; gap: 0.35rem;
+  color: var(--text3); font-size: 11px;
+  cursor: pointer; background: none; border: none;
+  font-family: var(--mono);
+  padding: 0; transition: color 0.15s;
+}
+.pa:hover { color: var(--teal); }
+.pa.heart.active { color: var(--rose); }
+
+/* replicated badge */
+.post-replicated {
+  position: absolute; top: 0.75rem; right: 1.25rem;
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); display: flex; align-items: center; gap: 0.3rem;
+}
+
+/* ═══════════════════════════════════════════════
+   NODES PAGE
+═══════════════════════════════════════════════ */
+.node-card {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  display: flex; align-items: center; gap: 1rem;
+  cursor: pointer; transition: background 0.12s;
+}
+.node-card:hover { background: var(--rim2); }
+
+.node-led { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.node-led.grey  { background: var(--violet); box-shadow: 0 0 8px var(--violet); }
+.node-led.light { background: var(--teal);   box-shadow: 0 0 8px var(--teal); }
+.node-led.dark  { background: var(--text3); }
+
+.node-info { flex: 1; min-width: 0; }
+.node-domain { font-size: 13px; font-weight: 500; }
+.node-name   { font-size: 11px; color: var(--text3); }
+
+.node-badge {
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--r);
+}
+.node-badge.grey  { background: var(--violet-dim); color: var(--violet); }
+.node-badge.light { background: var(--teal-dim);   color: var(--teal); }
+.node-badge.dark  { background: var(--rim2);        color: var(--text3); }
+
+.node-count { font-size: 11px; color: var(--text3); }
+
+/* ═══════════════════════════════════════════════
+   PROFILE PAGE
+═══════════════════════════════════════════════ */
+.profile-hero {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  background: linear-gradient(180deg, var(--teal-dim) 0%, transparent 100%);
+}
+
+.profile-ava-lg {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: var(--ink);
+  overflow: hidden; margin-bottom: 1rem;
+  border: 2px solid var(--rim);
+}
+.profile-ava-lg img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-name-lg {
+  font-family: var(--serif);
+  font-size: 1.5rem; letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.profile-handle { font-size: 11px; color: var(--text3); margin-top: 0.2rem; }
+.profile-bio    { font-size: 12px; color: var(--text2); margin-top: 0.75rem; line-height: 1.6; }
+
+.profile-stats {
+  display: flex; gap: 2rem;
+  margin-top: 1rem;
+}
+.stat-n { font-family: var(--serif); font-size: 1.2rem; }
+.stat-l { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.pro-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: linear-gradient(90deg, var(--teal-dim), var(--violet-dim));
+  border: 1px solid rgba(0,229,196,0.2);
+  color: var(--teal);
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.2rem 0.6rem; border-radius: var(--r);
+  margin-top: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════
+   RIGHT PANEL
+═══════════════════════════════════════════════ */
+.panel {
+  width: 280px; flex-shrink: 0;
+  border-right: 1px solid var(--rim);
+  display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+  background: rgba(5,6,10,0.4);
+}
+
+.panel-section {
+  border-bottom: 1px solid var(--rim);
+  flex-shrink: 0;
+}
+
+.panel-h {
+  padding: 0.75rem 1.25rem;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text3); border-bottom: 1px solid var(--rim);
+}
+
+.panel-body { padding: 1rem 1.25rem; }
+
+.connected-node {
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.connected-domain { font-size: 12px; color: var(--teal); font-weight: 500; }
+.connected-type   { font-size: 10px; color: var(--text3); margin-top: 0.15rem; }
+
+.panel-node-mini {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rim);
+  font-size: 11px;
+  cursor: pointer; transition: color 0.12s;
+}
+.panel-node-mini:last-child { border-bottom: none; }
+.panel-node-mini:hover { color: var(--teal); }
+.panel-node-mini .pnm-domain { flex: 1; }
+.panel-node-mini .pnm-count  { color: var(--text3); font-size: 10px; }
+
+/* ═══════════════════════════════════════════════
+   SHARED CONTROLS
+═══════════════════════════════════════════════ */
+input[type=text], textarea, select {
+  background: var(--ink2);
+  border: 1px solid var(--rim);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--r);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--teal); }
+input::placeholder, textarea::placeholder { color: var(--text3); }
+select { cursor: pointer; appearance: none; }
+
+.btn {
+  background: transparent;
+  border: 1px solid var(--rim);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.55rem 1rem;
+  cursor: pointer; border-radius: var(--r);
+  transition: all 0.15s;
+}
+.btn:hover { border-color: var(--text2); color: var(--text); }
+
+.btn-primary {
+  border-color: rgba(0,229,196,0.3);
+  color: var(--teal);
+  background: var(--teal-dim);
+}
+.btn-primary:hover {
+  background: rgba(0,229,196,0.2);
+  box-shadow: 0 0 12px var(--teal-glow);
+  color: var(--teal);
+}
+
+.btn-sm { padding: 0.35rem 0.7rem; font-size: 10px; }
+.btn-danger { border-color: rgba(255,76,106,0.3); color: var(--danger); }
+.btn-danger:hover { background: rgba(255,76,106,0.1); }
+
+/* ═══════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════ */
+.modal-bg {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(5,6,10,0.8);
+  backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal-bg.open { display: flex; }
+
+.modal {
+  background: var(--ink2);
+  border: 1px solid var(--rim);
+  width: 100%; max-width: 440px;
+  max-height: 85vh; overflow-y: auto;
+  border-radius: var(--r);
+  animation: riseIn 0.25s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+.modal-head {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-family: var(--serif); font-style: italic; font-size: 1rem; }
+.modal-x {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 16px; line-height: 1;
+  transition: color 0.15s; padding: 0.1rem 0.3rem;
+}
+.modal-x:hover { color: var(--text); }
+
+.modal-body { padding: 1.5rem; }
+.f-group { margin-bottom: 1rem; }
+.f-label {
+  display: block; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text3);
+  margin-bottom: 0.4rem;
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+#toasts {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  z-index: 200; pointer-events: none;
+}
+.toast {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--rim);
+  background: var(--ink2);
+  backdrop-filter: blur(12px);
+  font-size: 12px; max-width: 300px;
+  display: flex; align-items: center; gap: 0.6rem;
+  border-radius: var(--r);
+  animation: riseIn 0.2s ease forwards;
+}
+.toast.ok  { border-color: rgba(0,229,196,0.3); color: var(--teal); }
+.toast.err { border-color: rgba(255,76,106,0.3); color: var(--danger); }
+.toast.inf { border-color: rgba(155,127,255,0.3); color: var(--violet); }
+
+/* ═══════════════════════════════════════════════
+   STATES
+═══════════════════════════════════════════════ */
+.empty {
+  padding: 3rem 1.5rem; text-align: center;
+  color: var(--text3); font-size: 12px;
+}
+.empty-ico { font-size: 2rem; opacity: 0.25; margin-bottom: 0.75rem; }
+
+.loading {
+  padding: 2rem; display: flex; align-items: center;
+  justify-content: center; gap: 0.75rem;
+  color: var(--text3); font-size: 11px;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--rim);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════
+   POST DETAIL
+═══════════════════════════════════════════════ */
+.reply-bar {
+  border-top: 1px solid var(--rim);
+  padding: 0.85rem 1.5rem;
+  display: flex; gap: 0.75rem;
+  align-items: flex-start;
+  flex-shrink: 0;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+}
+.reply-bar textarea {
+  flex: 1; min-height: 38px; resize: none;
+  background: transparent; border: none;
+  color: var(--text); font-family: var(--mono); font-size: 13px; outline: none;
+}
+.reply-bar textarea::placeholder { color: var(--text3); }
+
+/* tabs */
+.tabs {
+  display: flex; border-bottom: 1px solid var(--rim); flex-shrink: 0;
+}
+.tab {
+  flex: 1; padding: 0.75rem 1rem; text-align: center;
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text3); cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.on { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* explore input row */
+.explore-bar {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--rim);
+  display: flex; gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 1100px) { .panel { display: none; } }
+@media (max-width: 720px) {
+  .sidebar { width: 54px; }
+  .sb-logo .label { display: none; }
+  .sb-item span:not(.ico) { display: none; }
+  .sb-item { justify-content: center; padding: 0.7rem; }
+  .sb-me-info, .btn-out { display: none; }
+  .sb-me { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="bg"><div class="bg-orb"></div></div>
+<div id="bg-scan"></div>
+<div id="toasts"></div>
+<div id="app">
+
+<!-- ════════════════════════════════
+     AUTH VIEW
+════════════════════════════════ -->
+<div id="v-auth" class="view">
+  <div class="auth-shell">
+    <div class="auth-top">
+      <div class="auth-wordmark">
+        <span class="butterfly">🦋</span>
+        <span>btfly</span>
+      </div>
+      <div class="auth-sub">Decentralised social network</div>
+    </div>
+    <div class="auth-body">
+      <div class="f-label">Node server</div>
+      <div class="auth-node-row">
+        <input type="text" id="inp-node" placeholder="node.example.social or localhost:8080">
+        <button class="btn-teal" onclick="applyNode()">Set</button>
+      </div>
+      <div class="auth-node-status">
+        <div class="node-dot-status" id="node-status-dot"></div>
+        <span id="node-status-txt">No node set</span>
+      </div>
+
+      <button class="auth-sign-in" onclick="startLogin()">
+        <span>↗&ensp;Sign in with Cloudlight</span>
+      </button>
+
+      <div class="auth-divider">or complete login</div>
+
+      <div class="auth-complete" id="auth-complete">
+        <div class="f-label">btfly_token</div>
+        <input type="text" id="inp-token" placeholder="eyJ…">
+        <div class="f-label">node_key</div>
+        <input type="text" id="inp-key" placeholder="ABC123…">
+        <button class="btn-teal" style="width:100%" onclick="doCompleteLogin()">
+          Complete &amp; Enter ↗
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     MAIN VIEW
+════════════════════════════════ -->
+<div id="v-main" class="view">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <span class="glyph">🦋</span>
+      <span class="label">btfly</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-item on"  id="sbi-feed"    onclick="nav('feed')">
+        <span class="ico">◈</span><span>Feed</span>
+      </div>
+      <div class="sb-item"     id="sbi-explore" onclick="nav('explore')">
+        <span class="ico">⊹</span><span>Explore</span>
+      </div>
+      <div class="sb-item"     id="sbi-nodes"   onclick="nav('nodes')">
+        <span class="ico">⬡</span><span>Nodes</span>
+      </div>
+      <div class="sb-item"     id="sbi-profile" onclick="nav('profile')">
+        <span class="ico">◎</span><span>Profile</span>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-me">
+        <div class="ava" id="sb-ava">?</div>
+        <div class="sb-me-info">
+          <div class="sb-me-name" id="sb-name">—</div>
+          <div class="sb-me-node" id="sb-node">—</div>
+        </div>
+        <button class="btn-out" onclick="logout()">out</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN COLUMN -->
+  <div class="col">
+
+    <!-- FEED PAGE -->
+    <div class="page show" id="pg-feed">
+      <div class="col-head">
+        <span class="col-head-title">Feed</span>
+        <button class="btn btn-sm" onclick="loadFeed()">↻</button>
+      </div>
+      <div class="compose">
+        <div class="ava" id="cmp-ava">?</div>
+        <div class="compose-body">
+          <textarea class="compose-ta" id="cmp-ta" placeholder="What's on your mind?" rows="3" oninput="onCompose()"></textarea>
+          <div class="compose-foot">
+            <span class="char-ct" id="cmp-ct">0 / 500</span>
+            <button class="btn btn-primary btn-sm" onclick="doPost()">Post ↗</button>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-area" id="feed-area">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <!-- EXPLORE PAGE -->
+    <div class="page" id="pg-explore">
+      <div class="col-head">
+        <span class="col-head-title">Explore</span>
+      </div>
+      <div class="explore-bar">
+        <input type="text" id="explore-id" placeholder="Node ID (UUID) or domain">
+        <button class="btn btn-primary btn-sm" onclick="doExplore()">Browse</button>
+      </div>
+      <div class="scroll-area" id="explore-area">
+        <div class="empty"><div class="empty-ico">⊹</div>Enter a node ID to explore its feed</div>
+      </div>
+    </div>
+
+    <!-- NODES PAGE -->
+    <div class="page" id="pg-nodes">
+      <div class="col-head">
+        <span class="col-head-title">Nodes</span>
+        <button class="btn btn-sm btn-primary" onclick="openModal('m-node')">+ Register</button>
+      </div>
+      <div class="tabs">
+        <div class="tab on"  onclick="filterNodes(null,this)">All</div>
+        <div class="tab"     onclick="filterNodes(0,this)">Dark</div>
+        <div class="tab"     onclick="filterNodes(1,this)">Grey</div>
+        <div class="tab"     onclick="filterNodes(2,this)">Light</div>
+      </div>
+      <div class="scroll-area" id="nodes-area">
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="pg-profile">
+      <div class="col-head">
+        <span class="col-head-title">Profile</span>
+        <button class="btn btn-sm" onclick="openModal('m-profile')">Edit</button>
+      </div>
+      <div class="scroll-area" id="profile-area">
+        <div class="profile-hero">
+          <div class="profile-ava-lg" id="prf-ava">?</div>
+          <div class="profile-name-lg" id="prf-name">—</div>
+          <div class="profile-handle"  id="prf-handle">—</div>
+          <div class="profile-bio"     id="prf-bio"></div>
+          <div class="profile-stats">
+            <div><div class="stat-n" id="prf-followers">0</div><div class="stat-l">Followers</div></div>
+            <div><div class="stat-n" id="prf-following">0</div><div class="stat-l">Following</div></div>
+          </div>
+          <div id="prf-pro" style="display:none" class="pro-badge">✦ Pro</div>
+        </div>
+        <div id="profile-posts-area">
+          <div class="loading"><div class="spinner"></div>Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST DETAIL PAGE -->
+    <div class="page" id="pg-post" style="flex-direction:column">
+      <div class="col-head">
+        <button class="btn btn-sm" onclick="back()">← Back</button>
+        <span class="col-head-title">Post</span>
+        <span></span>
+      </div>
+      <div class="scroll-area" id="post-area">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+      <div class="reply-bar">
+        <div class="ava" id="reply-ava">?</div>
+        <textarea id="reply-ta" placeholder="Write a reply…" rows="2"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="doReply()" style="flex-shrink:0">Reply ↗</button>
+      </div>
+    </div>
+
+  </div><!-- /col -->
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="panel-section">
+      <div class="panel-h">Connected Node</div>
+      <div class="panel-body">
+        <div class="connected-node">
+          <div class="node-led grey" id="panel-led"></div>
+          <div>
+            <div class="connected-domain" id="panel-domain">—</div>
+            <div class="connected-type"   id="panel-type">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="panel-h">Discover</div>
+      <div class="scroll-area" style="flex:1">
+        <div class="panel-body" id="panel-nodes">
+          <div class="loading" style="padding:1rem 0"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /v-main -->
+</div><!-- /app -->
+
+<!-- ════════ MODALS ════════ -->
+
+<!-- Register Node -->
+<div class="modal-bg" id="m-node">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Register a Node</span>
+      <button class="modal-x" onclick="closeModal('m-node')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group">
+        <label class="f-label">Domain</label>
+        <input type="text" id="mn-domain" placeholder="example.social">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Display Name</label>
+        <input type="text" id="mn-name" placeholder="My BTFLY Node">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Description (optional)</label>
+        <input type="text" id="mn-desc" placeholder="A node for…">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Type</label>
+        <select id="mn-type">
+          <option value="1">Grey — discoverable, no replication</option>
+          <option value="2">Light — full federation & replication</option>
+          <option value="0">Dark — private, unlisted</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.25rem" onclick="doRegisterNode()">Register ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile -->
+<div class="modal-bg" id="m-profile">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Edit Profile</span>
+      <button class="modal-x" onclick="closeModal('m-profile')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group">
+        <label class="f-label">Bio</label>
+        <textarea id="mp-bio" rows="3" placeholder="Tell the network about you…"></textarea>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Avatar URL</label>
+        <input type="text" id="mp-avatar" placeholder="https://…">
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.25rem" onclick="doSaveProfile()">Save ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   CONFIG — update for your deployment
+══════════════════════════════════════════════════════ */
+const CFG = {
+  authBase:   'https://api.login.btfly.social',
+  defaultNode: location.hostname === 'localhost' ? 'http://localhost:8080' : '',
+  maxLen:     500,
+};
+
+/* ══════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════ */
+const S = {
+  nodeUrl:     localStorage.getItem('btfly_node') || CFG.defaultNode || '',
+  token:       null,
+  account:     null,
+  prevPage:    'feed',
+  activePostId: null,
+  allNodes:    [],
+};
+
+/* ══════════════════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════════════════ */
+(function boot() {
+  S.nodeUrl = (S.nodeUrl || '').replace(/\/$/, '');
+
+  // Seed node input
+  if (S.nodeUrl) {
+    document.getElementById('inp-node').value = S.nodeUrl.replace(/^https?:\/\//, '');
+    setNodeStatusUi(true, S.nodeUrl);
+  }
+
+  // Check for auth callback params in URL
+  const p = new URLSearchParams(location.search);
+  const tok = p.get('btfly_token');
+  const key = p.get('node_key');
+  if (tok && key) {
+    document.getElementById('auth-complete').classList.add('show');
+    document.getElementById('inp-token').value = tok;
+    document.getElementById('inp-key').value   = key;
+    history.replaceState({}, '', location.pathname);
+    toast('Cloudlight auth done — click Complete & Enter', 'inf');
+    showView('auth');
+    return;
+  }
+
+  // Restore session
+  const savedTok = localStorage.getItem('btfly_tok');
+  const savedAcc = localStorage.getItem('btfly_acc');
+  if (savedTok && savedAcc) {
+    S.token   = savedTok;
+    S.account = JSON.parse(savedAcc);
+    enterApp();
+    return;
+  }
+
+  showView('auth');
+})();
+
+/* ══════════════════════════════════════════════════════
+   NODE URL
+══════════════════════════════════════════════════════ */
+function applyNode() {
+  let v = document.getElementById('inp-node').value.trim();
+  if (!v) return;
+  if (!/^https?:\/\//.test(v)) v = 'http://' + v;
+  v = v.replace(/\/$/, '');
+  S.nodeUrl = v;
+  localStorage.setItem('btfly_node', v);
+  setNodeStatusUi(true, v);
+  toast('Node set → ' + v, 'ok');
+}
+
+function setNodeStatusUi(ok, url) {
+  const dot = document.getElementById('node-status-dot');
+  const txt = document.getElementById('node-status-txt');
+  dot.className = 'node-dot-status' + (ok ? ' ok' : '');
+  txt.textContent = ok ? url : 'No node set';
+}
+
+/* ══════════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════════ */
+async function startLogin() {
+  if (!S.nodeUrl) { toast('Set a node URL first', 'err'); return; }
+
+  // Try to get a node key from the node server
+  const nodeId = await findCurrentNodeId();
+  const returnUrl = location.href.split('?')[0];
+
+  if (nodeId) {
+    try {
+      const r = await anonFetch('POST', `/api/auth/node/${nodeId}/generate-key`);
+      // Append our returnUrl to the cloudlightLoginUrl
+      const loginUrl = r.cloudlightLoginUrl + '&returnUrl=' + encodeURIComponent(returnUrl);
+      location.href = loginUrl;
+      return;
+    } catch {}
+  }
+
+  // Fallback: open Cloudlight directly, show manual complete form
+  document.getElementById('auth-complete').classList.add('show');
+  const loginUrl = `${CFG.authBase}/api/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+  window.open(loginUrl, '_blank');
+  toast('Complete login below after authenticating', 'inf');
+}
+
+async function findCurrentNodeId() {
+  try {
+    const nodes = await anonFetch('GET', '/api/nodes');
+    if (!Array.isArray(nodes) || !nodes.length) return null;
+    const host = S.nodeUrl.replace(/^https?:\/\//, '').split(':')[0];
+    const match = nodes.find(n => n.domain === host || n.domain === S.nodeUrl);
+    return (match || nodes[0]).id;
+  } catch { return null; }
+}
+
+async function doCompleteLogin() {
+  const tok    = document.getElementById('inp-token').value.trim();
+  const key    = document.getElementById('inp-key').value.trim();
+  const domain = S.nodeUrl.replace(/^https?:\/\//, '').split(':')[0] || 'localhost';
+  if (!tok || !key) { toast('Both fields required', 'err'); return; }
+  if (!S.nodeUrl)   { toast('Set a node URL first', 'err'); return; }
+  try {
+    const r = await anonFetch('POST', '/api/auth/node/complete-login', {
+      btflyToken: tok, nodeDomain: domain, key,
+    });
+    S.token   = r.nodeToken;
+    S.account = r.nodeAccount;
+    localStorage.setItem('btfly_tok', S.token);
+    localStorage.setItem('btfly_acc', JSON.stringify(S.account));
+    toast('Welcome, ' + (S.account.username || 'friend') + ' 🦋', 'ok');
+    enterApp();
+  } catch (e) { toast('Login failed: ' + e.message, 'err'); }
+}
+
+function logout() {
+  localStorage.removeItem('btfly_tok');
+  localStorage.removeItem('btfly_acc');
+  S.token = null; S.account = null;
+  showView('auth');
+  toast('Signed out', 'inf');
+}
+
+/* ══════════════════════════════════════════════════════
+   APP
+══════════════════════════════════════════════════════ */
+function enterApp() {
+  showView('main');
+  syncSidebar();
+  loadFeed();
+  loadNodesPanel();
+  loadNodes();
+  syncProfile();
+}
+
+function syncSidebar() {
+  const a = S.account;
+  if (!a) return;
+  setText('sb-name', a.username || '—');
+  setText('sb-node', a.nodeDomain || S.nodeUrl.replace(/^https?:\/\//, ''));
+  setAva('sb-ava',      a.avatarUrl, a.username);
+  setAva('cmp-ava',     a.avatarUrl, a.username);
+  setAva('reply-ava',   a.avatarUrl, a.username);
+  setText('panel-domain', S.nodeUrl.replace(/^https?:\/\//, ''));
+}
+
+/* ══════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════ */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+  document.getElementById('v-' + id).classList.add('show');
+}
+
+function nav(page) {
+  S.prevPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById('pg-' + page).classList.add('show');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('on'));
+  const sbi = document.getElementById('sbi-' + page);
+  if (sbi) sbi.classList.add('on');
+  if (page === 'nodes')   loadNodes();
+  if (page === 'profile') syncProfile();
+}
+
+function back() { nav(S.prevPage || 'feed'); }
+
+/* ══════════════════════════════════════════════════════
+   FEED
+══════════════════════════════════════════════════════ */
+async function loadFeed() {
+  const el = document.getElementById('feed-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const r = await authFetch('GET', '/api/feed?page=1&pageSize=40');
+    renderPosts(r.posts || [], el, true);
+  } catch (e) {
+    el.innerHTML = emptyHtml('◈', e.message);
+  }
+}
+
+async function doExplore() {
+  let val = document.getElementById('explore-id').value.trim();
+  if (!val) return;
+  const el = document.getElementById('explore-area');
+  el.innerHTML = loadingHtml();
+  try {
+    // Try UUID path first, then domain lookup
+    let nodeId = val;
+    if (!val.match(/^[0-9a-f-]{36}$/i)) {
+      const nodes = await anonFetch('GET', '/api/nodes');
+      const match = (nodes || []).find(n => n.domain === val);
+      if (match) nodeId = match.id;
+    }
+    const r = await anonFetch('GET', `/api/nodes/${nodeId}/feed?page=1&pageSize=40`);
+    renderPosts(r.posts || [], el, false);
+  } catch (e) {
+    el.innerHTML = emptyHtml('⊹', e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   COMPOSE
+══════════════════════════════════════════════════════ */
+function onCompose() {
+  const len = document.getElementById('cmp-ta').value.length;
+  const el  = document.getElementById('cmp-ct');
+  el.textContent = `${len} / ${CFG.maxLen}`;
+  el.className = 'char-ct' + (len > CFG.maxLen ? ' over' : len > CFG.maxLen * 0.85 ? ' warn' : '');
+}
+
+async function doPost() {
+  const txt = document.getElementById('cmp-ta').value.trim();
+  if (!txt) return;
+  if (txt.length > CFG.maxLen) { toast('Too long', 'err'); return; }
+  try {
+    await authFetch('POST', '/api/posts', { content: txt });
+    document.getElementById('cmp-ta').value = '';
+    onCompose();
+    toast('Posted 🦋', 'ok');
+    loadFeed();
+  } catch (e) { toast('Failed: ' + e.message, 'err'); }
+}
+
+/* ══════════════════════════════════════════════════════
+   POST RENDERING
+══════════════════════════════════════════════════════ */
+function renderPosts(posts, container, actions) {
+  if (!posts.length) { container.innerHTML = emptyHtml('◈', 'Nothing here yet'); return; }
+  container.innerHTML = posts.map((p, i) => postHtml(p, actions, i)).join('');
+}
+
+function postHtml(p, actions, idx = 0) {
+  const a   = p.author || {};
+  const ava = avaHtml(a.avatarUrl, a.username, 28);
+  const ago = p.createdAt ? timeAgo(new Date(p.createdAt)) : '';
+  const replyBadge = p.parentPostId ? `<div class="post-reply-to">↳ reply to thread</div>` : '';
+  const repBadge   = p.isReplicated ? `<div class="post-replicated">⟳ replicated</div>` : '';
+
+  const actHtml = actions ? `
+    <div class="post-actions">
+      <button class="pa" onclick="openPost('${p.id}');event.stopPropagation()">
+        ◎ ${p.replyCount || 0}
+      </button>
+      <button class="pa heart" id="lbtn-${p.id}" onclick="toggleLike('${p.id}',this);event.stopPropagation()">
+        ♦ ${p.likeCount || 0}
+      </button>
+      <button class="pa" onclick="copyLink('${p.id}');event.stopPropagation()">⊹ copy</button>
+    </div>` : '';
+
+  return `<div class="post" style="animation-delay:${idx * 0.04}s" onclick="openPost('${p.id}')">
+    ${repBadge}
+    ${replyBadge}
+    <div class="post-hd">
+      ${ava}
+      <div class="post-meta">
+        <div class="post-author">${esc(a.username || '—')}</div>
+        <div class="post-node">${esc(a.nodeDomain || '')}</div>
+      </div>
+      <div class="post-time">${ago}</div>
+    </div>
+    <div class="post-body">${esc(p.content)}</div>
+    ${actHtml}
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════
+   POST DETAIL
+══════════════════════════════════════════════════════ */
+async function openPost(id) {
+  S.activePostId = id;
+  S.prevPage = S.prevPage || 'feed';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById('pg-post').classList.add('show');
+  document.getElementById('post-area').innerHTML = loadingHtml();
+  document.getElementById('reply-ta').value = '';
+
+  try {
+    const [post, replies] = await Promise.all([
+      anonFetch('GET', `/api/posts/${id}`),
+      anonFetch('GET', `/api/posts/${id}/replies?page=1&pageSize=60`),
+    ]);
+    const area = document.getElementById('post-area');
+    area.innerHTML =
+      `<div style="border-bottom:1px solid var(--rim)">${postHtml(post, true)}</div>` +
+      `<div style="padding:0.6rem 1.5rem;font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--rim)">${(replies.posts||[]).length} replies</div>` +
+      (replies.posts || []).map((p,i) => postHtml(p, true, i)).join('');
+  } catch (e) {
+    document.getElementById('post-area').innerHTML = emptyHtml('◈', e.message);
+  }
+}
+
+async function doReply() {
+  const txt = document.getElementById('reply-ta').value.trim();
+  if (!txt || !S.activePostId) return;
+  try {
+    await authFetch('POST', '/api/posts', { content: txt, parentPostId: S.activePostId });
+    document.getElementById('reply-ta').value = '';
+    toast('Reply sent 🦋', 'ok');
+    openPost(S.activePostId);
+  } catch (e) { toast('Failed: ' + e.message, 'err'); }
+}
+
+/* ══════════════════════════════════════════════════════
+   LIKES
+══════════════════════════════════════════════════════ */
+async function toggleLike(postId, btn) {
+  const isLiked = btn.classList.contains('active');
+  try {
+    const method = isLiked ? 'DELETE' : 'POST';
+    const r = await authFetch(method, `/api/posts/${postId}/like`);
+    btn.classList.toggle('active', !isLiked);
+    btn.innerHTML = `♦ ${r ? (r.likeCount || 0) : '?'}`;
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+function copyLink(postId) {
+  const url = `${S.nodeUrl}/api/posts/${postId}`;
+  navigator.clipboard.writeText(url).then(() => toast('Link copied', 'ok')).catch(() => toast('Copy failed', 'err'));
+}
+
+/* ══════════════════════════════════════════════════════
+   NODES
+══════════════════════════════════════════════════════ */
+const NODE_TYPE = { 0: 'dark', 1: 'grey', 2: 'light' };
+const NODE_LABEL = { 0: 'Dark', 1: 'Grey', 2: 'Light' };
+
+async function loadNodes() {
+  const el = document.getElementById('nodes-area');
+  el.innerHTML = loadingHtml();
+  try {
+    S.allNodes = await anonFetch('GET', '/api/nodes') || [];
+    renderNodes(S.allNodes, el);
+  } catch (e) {
+    el.innerHTML = emptyHtml('⬡', e.message);
+  }
+}
+
+function filterNodes(type, tab) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('on'));
+  tab.classList.add('on');
+  const filtered = type === null ? S.allNodes : S.allNodes.filter(n => n.serverType === type);
+  renderNodes(filtered, document.getElementById('nodes-area'));
+}
+
+function renderNodes(nodes, container) {
+  if (!nodes.length) { container.innerHTML = emptyHtml('⬡', 'No nodes found'); return; }
+  container.innerHTML = nodes.map(n => {
+    const t = NODE_TYPE[n.serverType] || 'grey';
+    return `<div class="node-card" onclick="browseNode('${n.id}','${esc(n.domain)}')">
+      <div class="node-led ${t}"></div>
+      <div class="node-info">
+        <div class="node-domain">${esc(n.domain)}</div>
+        <div class="node-name">${esc(n.displayName || '')}${n.description ? ' · ' + esc(n.description) : ''}</div>
+      </div>
+      <span class="node-badge ${t}">${NODE_LABEL[n.serverType]||'?'}</span>
+      <span class="node-count">${n.memberCount||0}</span>
+    </div>`;
+  }).join('');
+}
+
+async function loadNodesPanel() {
+  try {
+    const nodes = await anonFetch('GET', '/api/nodes');
+    const el = document.getElementById('panel-nodes');
+    if (!nodes || !nodes.length) { el.innerHTML = '<div style="color:var(--text3);font-size:11px;padding:0">No nodes</div>'; return; }
+    el.innerHTML = nodes.slice(0, 6).map(n => {
+      const t = NODE_TYPE[n.serverType] || 'grey';
+      return `<div class="panel-node-mini" onclick="browseNode('${n.id}','${esc(n.domain)}')">
+        <div class="node-led ${t}" style="width:6px;height:6px"></div>
+        <div class="pnm-domain">${esc(n.domain)}</div>
+        <div class="pnm-count">${n.memberCount||0}</div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+function browseNode(id, domain) {
+  document.getElementById('explore-id').value = domain || id;
+  nav('explore');
+  doExplore();
+}
+
+async function doRegisterNode() {
+  const domain = document.getElementById('mn-domain').value.trim();
+  const name   = document.getElementById('mn-name').value.trim();
+  const desc   = document.getElementById('mn-desc').value.trim();
+  const type   = parseInt(document.getElementById('mn-type').value);
+  if (!domain || !name) { toast('Domain & name required', 'err'); return; }
+  try {
+    await authFetch('POST', '/api/nodes', { domain, displayName: name, description: desc || null, serverType: type });
+    closeModal('m-node');
+    toast('Node registered ↗', 'ok');
+    loadNodes(); loadNodesPanel();
+  } catch (e) { toast('Failed: ' + e.message, 'err'); }
+}
+
+/* ══════════════════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════════════════ */
+async function syncProfile() {
+  const a = S.account;
+  if (!a) return;
+  setAva('prf-ava', a.avatarUrl, a.username, 64);
+  setText('prf-name',      a.username || '—');
+  setText('prf-handle',    a.nodeDomain ? `@${a.username}@${a.nodeDomain}` : `@${a.username||'?'}`);
+  setText('prf-bio',       a.bio || '');
+  setText('prf-followers', a.followerCount || 0);
+  setText('prf-following', a.followingCount || 0);
+  document.getElementById('prf-pro').style.display = a.isPro ? 'inline-flex' : 'none';
+
+  // Load own posts via personal feed
+  const el = document.getElementById('profile-posts-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const r = await authFetch('GET', '/api/feed?page=1&pageSize=40');
+    renderPosts(r.posts || [], el, true);
+  } catch (e) { el.innerHTML = emptyHtml('◎', e.message); }
+}
+
+async function doSaveProfile() {
+  const bio    = document.getElementById('mp-bio').value.trim();
+  const avatar = document.getElementById('mp-avatar').value.trim();
+  // Profile update endpoint not in this API version — notify user
+  toast('Profile update coming in next API version', 'inf');
+  closeModal('m-profile');
+}
+
+/* ══════════════════════════════════════════════════════
+   API FETCH
+══════════════════════════════════════════════════════ */
+async function authFetch(method, path, body) {
+  return _fetch(method, path, body, true);
+}
+async function anonFetch(method, path, body) {
+  return _fetch(method, path, body, false);
+}
+async function _fetch(method, path, body, auth) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && S.token) headers['Authorization'] = 'Bearer ' + S.token;
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(S.nodeUrl + path, opts);
+  if (res.status === 204) return null;
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || json.title || json.detail || String(res.status));
+  return json;
+}
+
+/* ══════════════════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════════════════ */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+function toast(msg, type = 'inf') {
+  const icons = { ok: '✓', err: '✕', inf: '◈' };
+  const el = Object.assign(document.createElement('div'), {
+    className: `toast ${type}`,
+    innerHTML: `<span>${icons[type]||'◈'}</span>${esc(msg)}`,
+  });
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(d) {
+  const s = (Date.now() - d) / 1000;
+  if (s < 60)    return Math.floor(s) + 's';
+  if (s < 3600)  return Math.floor(s/60) + 'm';
+  if (s < 86400) return Math.floor(s/3600) + 'h';
+  return Math.floor(s/86400) + 'd';
+}
+
+function avaHtml(url, name, size = 30) {
+  const init = (name||'?')[0].toUpperCase();
+  const inner = url ? `<img src="${esc(url)}" alt="" onerror="this.style.display='none'">` : init;
+  return `<div class="ava" style="width:${size}px;height:${size}px;font-size:${Math.floor(size*0.4)}px">${inner}</div>`;
+}
+
+function setAva(id, url, name, size) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (size) { el.style.width = size+'px'; el.style.height = size+'px'; el.style.fontSize = Math.floor(size*0.4)+'px'; }
+  const init = (name||'?')[0].toUpperCase();
+  el.innerHTML = url ? `<img src="${esc(url)}" alt="" onerror="this.innerHTML='${init}'">` : init;
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function loadingHtml() {
+  return `<div class="loading"><div class="spinner"></div>Loading…</div>`;
+}
+
+function emptyHtml(ico, msg) {
+  return `<div class="empty"><div class="empty-ico">${ico}</div>${esc(msg)}</div>`;
+}
+</script>
+</body>
+</html>
