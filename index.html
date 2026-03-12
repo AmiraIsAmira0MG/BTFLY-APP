@@ -1028,6 +1028,32 @@ select.inp { appearance: none; cursor: pointer; }
 <script>
 'use strict';
 
+// ─── UTILS (must be first — boot IIFE uses these) ────────────────────────────
+const G   = id => document.getElementById(id);
+const esc = s  => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const setText = (id, val) => { const el = G(id); if (el) el.textContent = val; };
+const loadingHtml = () => `<div class="loading-row"><div class="spinner"></div>Loading…</div>`;
+const emptyHtml   = (ico, msg) => `<div class="empty-state"><span class="empty-ico">${ico}</span><p class="empty-msg">${esc(msg)}</p></div>`;
+
+function timeAgo(d) {
+  const s = (Date.now() - d) / 1000;
+  if (s < 60)    return Math.floor(s) + 's';
+  if (s < 3600)  return Math.floor(s / 60) + 'm';
+  if (s < 86400) return Math.floor(s / 3600) + 'h';
+  return Math.floor(s / 86400) + 'd';
+}
+
+function setAva(id, url, name, size, fs) {
+  const el = G(id); if (!el) return;
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  el.style.fontSize = fs + 'px';
+  const init = (name || '?')[0].toUpperCase();
+  el.innerHTML = url
+    ? `<img src="${esc(url)}" alt="" onerror="this.parentNode.textContent='${init}'">`
+    : init;
+}
+
 const CFG = {
   authBase:  'https://api.login.btfly.social',
   defaultNode: location.hostname === 'localhost' ? 'http://localhost:8080' : '',
@@ -1787,33 +1813,7 @@ function toast(msg, type = 'inf') {
   setTimeout(() => el.remove(), 4000);
 }
 
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-
-const G   = id => document.getElementById(id);
-const esc = s  => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const setText = (id, val) => { const el = G(id); if (el) el.textContent = val; };
-
-function timeAgo(d) {
-  const s = (Date.now() - d) / 1000;
-  if (s < 60)    return Math.floor(s) + 's';
-  if (s < 3600)  return Math.floor(s / 60) + 'm';
-  if (s < 86400) return Math.floor(s / 3600) + 'h';
-  return Math.floor(s / 86400) + 'd';
-}
-
-function setAva(id, url, name, size, fs) {
-  const el = G(id); if (!el) return;
-  el.style.width = size + 'px';
-  el.style.height = size + 'px';
-  el.style.fontSize = fs + 'px';
-  const init = (name || '?')[0].toUpperCase();
-  el.innerHTML = url
-    ? `<img src="${esc(url)}" alt="" onerror="this.parentNode.textContent='${init}'">`
-    : init;
-}
-
-const loadingHtml = () => `<div class="loading-row"><div class="spinner"></div>Loading…</div>`;
-const emptyHtml   = (ico, msg) => `<div class="empty-state"><span class="empty-ico">${ico}</span><p class="empty-msg">${esc(msg)}</p></div>`;
+// (utils defined at top of script)
 </script>
 </body>
 </html>
