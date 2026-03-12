@@ -140,7 +140,6 @@ select.inp { appearance: none; cursor: pointer; }
   width: 52px; height: 52px; object-fit: contain; display: block;
   filter: drop-shadow(0 0 12px rgba(180,142,255,.45));
 }
-/* auth wordmark — image only */
 .auth-tagline { font-size: 12px; color: var(--t3); }
 .auth-body { padding: 20px 24px 24px; }
 .f-row { margin-bottom: 12px; }
@@ -213,7 +212,6 @@ select.inp { appearance: none; cursor: pointer; }
   display: flex; align-items: center; gap: 8px;
 }
 .sb-logo-img { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(180,142,255,.4)); }
-/* sb wordmark — image only */
 .sb-nav { flex: 1; overflow-y: auto; padding: 8px 6px; }
 .sb-sec-label {
   font-size: 10px; font-weight: 700;
@@ -523,51 +521,35 @@ select.inp { appearance: none; cursor: pointer; }
 .node-badge.dark  { color: var(--t3); }
 .node-members { font-size: 12px; color: var(--t4); flex-shrink: 0; }
 
-<!-- COPY THIS SECTION AND REPLACE YOUR EXISTING PROFILE CSS SECTION IN THE <style> TAG -->
-
 /* ── PROFILE ── */
 .profile-banner {
   height: 100px; flex-shrink: 0;
   background: linear-gradient(135deg, #1a1030 0%, #0d1a2e 40%, #1a0d2e 100%);
-  position: relative; overflow: hidden;
-  z-index: 1;
+  position: relative;
 }
 .profile-banner::after {
   content: '';
   position: absolute; inset: 0;
   background: linear-gradient(135deg, rgba(180,142,255,0.18) 0%, rgba(93,232,212,0.10) 60%, rgba(247,197,255,0.08) 100%);
   pointer-events: none;
-}
-.profile-banner img { 
-  width: 100%; height: 100%; object-fit: cover; 
-  position: relative; z-index: 1; 
-}
-.profile-info { 
-  padding: 10px 14px 14px; 
-  border-bottom: 1px solid var(--border);
-  position: relative;
   z-index: 2;
-  background: var(--bg);
 }
-.prf-ava-wrap { 
-  margin-top: -34px; 
-  margin-bottom: 8px;
-  position: relative;
-  z-index: 3;
+.profile-banner img {
+  width: 100%; height: 100%; object-fit: cover;
+  position: absolute; inset: 0;
+  z-index: 1;
+  display: block;
 }
+.profile-info { padding: 10px 14px 14px; border-bottom: 1px solid var(--border); }
+.prf-ava-wrap { margin-top: -34px; margin-bottom: 8px; position: relative; z-index: 3; }
 .prf-ava {
   width: 68px; height: 68px; border-radius: 50%;
   border: 3px solid var(--bg);
   background: var(--surface3);
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; font-weight: 700; color: var(--t1); overflow: hidden;
-  position: relative;
-  z-index: 4;
 }
-.prf-ava img { 
-  width: 100%; height: 100%; object-fit: cover; 
-  border-radius: 50%; 
-}
+.prf-ava img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .prf-name   { font-size: 17px; font-weight: 700; color: var(--t1); }
 .prf-handle { font-size: 13px; color: var(--t3); margin-top: 1px; }
 .prf-bio    { font-size: 13px; color: var(--t2); margin-top: 9px; line-height: 1.6; }
@@ -625,8 +607,6 @@ select.inp { appearance: none; cursor: pointer; }
 .panel-node-row { display: flex; align-items: center; gap: 8px; }
 .panel-live-dot {
   width: 7px; height: 7px; border-radius: 50%;
-  background: var(--green); flex-shrink: 0;
-  box-shadow: 0 0 5px var(--green);
   background: var(--g2); box-shadow: 0 0 5px var(--g2);
   animation: blink 3s ease infinite;
 }
@@ -715,7 +695,6 @@ select.inp { appearance: none; cursor: pointer; }
 @media (max-width: 800px) {
   :root { --sidebar-w: 50px; }
   .sb-top { padding: 10px 6px; justify-content: center; }
-  /* wordmark is image-only, nothing to hide */
   .sb-sec-label { display: none; }
   .sb-item span:not(.ico) { display: none; }
   .sb-item { justify-content: center; padding: 8px; }
@@ -1052,7 +1031,7 @@ select.inp { appearance: none; cursor: pointer; }
 <script>
 'use strict';
 
-// ─── UTILS (must be first — boot IIFE uses these) ────────────────────────────
+// ─── UTILS ───────────────────────────────────────────────────────────────────
 const G   = id => document.getElementById(id);
 const esc = s  => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const setText = (id, val) => { const el = G(id); if (el) el.textContent = val; };
@@ -1095,7 +1074,7 @@ const S = {
   feedTab:     'node',
 };
 
-// ─── BOOT ───────────────────────────────────────────────────────────────────
+// ─── BOOT ────────────────────────────────────────────────────────────────────
 
 (async function boot() {
   if (S.nodeUrl) {
@@ -1125,7 +1104,7 @@ const S = {
   showView('auth');
 })();
 
-// ─── AUTH ───────────────────────────────────────────────────────────────────
+// ─── AUTH ────────────────────────────────────────────────────────────────────
 
 function applyNode() {
   let v = G('inp-node').value.trim();
@@ -1557,7 +1536,6 @@ function toggleCWReveal(bar) {
 }
 
 function openEditPost(postId, btn) {
-  // Walk up to the .post element to grab stored data
   const postEl = btn.closest('.post');
   const content = postEl ? postEl.dataset.content : '';
   const cw      = postEl ? postEl.dataset.cw : '';
@@ -1665,7 +1643,7 @@ async function toggleBm(postId, btn) {
     await authFetch(on ? 'DELETE' : 'POST', `/api/posts/${postId}/bookmark`);
     btn.classList.toggle('bookmarked', !on);
     toast(on ? 'Bookmark removed' : 'Bookmarked', 'ok');
-    if (!on) loadBookmarks(); // refresh bookmarks if we're there
+    if (!on) loadBookmarks();
   } catch (e) { toast(e.message, 'err'); }
 }
 
@@ -1744,18 +1722,17 @@ async function loadBookmarks() {
 async function syncProfile() {
   const a = S.account; if (!a) return;
 
-  // Banner
   const bannerEl = G('prf-banner');
   if (a.bannerUrl) {
-    bannerEl.innerHTML = `<img src="${esc(a.bannerUrl)}" alt="" onerror="this.innerHTML=''">`;
+    // FIX: use style.display='none' on error instead of this.innerHTML='' which fails on <img>
+    bannerEl.innerHTML = `<img src="${esc(a.bannerUrl)}" alt="" onerror="this.style.display='none'">`;
   } else {
     bannerEl.innerHTML = '';
   }
 
-  // Avatar
   const pav = G('prf-ava');
   if (a.avatarUrl) {
-    pav.innerHTML = `<img src="${esc(a.avatarUrl)}" alt="" onerror="this.parentNode.textContent='${esc((a.username||'?')[0].toUpperCase())}'">`;
+    pav.innerHTML = `<img src="${esc(a.avatarUrl)}" alt="" onerror="this.style.display='none'">`;
   } else {
     pav.textContent = (a.username || '?')[0].toUpperCase();
   }
@@ -1772,7 +1749,6 @@ async function syncProfile() {
   if (a.isNodeAdmin) pills += '<span class="pill admin">Admin</span>';
   G('prf-pills').innerHTML = pills;
 
-  // Posts
   const postsEl = G('profile-posts-area');
   postsEl.innerHTML = loadingHtml();
   try {
@@ -1849,8 +1825,6 @@ function toast(msg, type = 'inf') {
   G('toasts').appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
-
-// (utils defined at top of script)
 </script>
 </body>
 </html>
