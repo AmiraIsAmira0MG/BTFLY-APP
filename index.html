@@ -2,420 +2,726 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BTFLY — App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BTFLY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="manifest" href="/site.webmanifest">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #07070f;
-  --surface:  #0e0e1c;
-  --surface2: #13132a;
-  --border:   rgba(255,255,255,0.06);
-  --c1: #b48eff;
-  --c2: #5de8d4;
-  --c3: #f7c5ff;
-  --c4: #ffd97a;
-  --text:  #f2f0fc;
-  --muted: rgba(242,240,252,0.42);
-  --danger: #ff6db1;
-  --r: 22px;
-  --sidebar-w: 220px;
-  --bottom-nav-h: 58px;
+  --bg:       #111114;
+  --sidebar:  #1a1a1f;
+  --surface:  #1e1e24;
+  --surface2: #25252d;
+  --surface3: #2d2d38;
+  --hover:    rgba(255,255,255,.035);
+  --active:   rgba(255,255,255,.06);
+  --border:   rgba(255,255,255,.065);
+  --border2:  rgba(255,255,255,.035);
+
+  --g1: #b48eff;
+  --g2: #5de8d4;
+  --g3: #f7c5ff;
+  --grad: linear-gradient(135deg, var(--g1) 0%, var(--g2) 50%, var(--g3) 100%);
+  --accent:    #b48eff;
+  --accent-h:  #9d78f0;
+  --accent-bg: rgba(180,142,255,.11);
+  --accent-lo: rgba(180,142,255,.055);
+
+  --green:  #3ba55c;
+  --red:    #ed4245;
+  --yellow: #faa61a;
+
+  --t1: #e5e4ee;
+  --t2: #a09fb4;
+  --t3: #6b6a7e;
+  --t4: #3f3e4d;
+
+  --font: 'DM Sans', sans-serif;
+  --r: 6px;
+  --sidebar-w: 228px;
+  --bnav-h: 52px;
 }
 
 html, body { height: 100%; overflow: hidden; }
 body {
+  font-family: var(--font);
   background: var(--bg);
-  color: var(--text);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
-  cursor: none;
+  color: var(--t1);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── CURSOR ── */
-.cursor {
-  position: fixed; width: 10px; height: 10px;
-  background: var(--c1); border-radius: 50%;
-  pointer-events: none; z-index: 9999;
-  transform: translate(-50%,-50%);
-  transition: width .18s, height .18s, background .2s;
-  mix-blend-mode: screen;
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 2px; }
+
+/* ── UTIL ── */
+.hidden { display: none !important; }
+@keyframes fadeUp  { from{opacity:0;transform:translateY(8px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn  { from{opacity:0}                             to{opacity:1} }
+@keyframes slideUp { from{opacity:0;transform:translateY(14px) scale(.99)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes spin    { to{transform:rotate(360deg)} }
+@keyframes blink   { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  padding: 7px 14px; border-radius: var(--r);
+  border: none; cursor: pointer; white-space: nowrap; text-decoration: none;
+  transition: background .1s, opacity .1s, transform .08s;
 }
-.cursor.big { width: 48px; height: 48px; background: rgba(181,142,255,.18); border: 1.5px solid var(--c1); }
-@media (max-width: 768px) { .cursor { display: none; } body { cursor: auto; } }
-
-/* ── ORBS ── */
-.orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.orb  { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.55; }
-.orb1 { width:600px;height:600px;top:-10%;left:-5%;  background:radial-gradient(circle,#6b35cc,transparent 70%); animation:floatA 20s ease-in-out infinite alternate; }
-.orb2 { width:500px;height:500px;top:30%;right:-8%; background:radial-gradient(circle,#1bcbbf,transparent 70%); animation:floatB 25s ease-in-out infinite alternate; }
-.orb3 { width:400px;height:400px;bottom:-5%;left:30%; background:radial-gradient(circle,#c458e8,transparent 70%); animation:floatA 18s ease-in-out infinite alternate-reverse; }
-.orb4 { width:300px;height:300px;top:60%;left:15%; background:radial-gradient(circle,#f7c5ff,transparent 70%); opacity:.2; animation:floatB 22s ease-in-out infinite alternate; }
-@keyframes floatA { from{transform:translate(0,0) scale(1);}   to{transform:translate(60px,40px) scale(1.15);} }
-@keyframes floatB { from{transform:translate(0,0) scale(1.05);} to{transform:translate(-50px,60px) scale(0.95);} }
-
-.grad {
-  background: linear-gradient(135deg, var(--c1) 0%, var(--c2) 50%, var(--c3) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
-@keyframes pulse  { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.65);} }
-@keyframes wingFlap { 0%,100%{transform:scaleX(1);} 48%{transform:scaleX(0.82);} 50%{transform:scaleX(0.78);} 52%{transform:scaleX(0.82);} }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes riseIn { from{opacity:0;transform:translateY(16px) scale(0.98);} to{opacity:1;transform:translateY(0) scale(1);} }
-
-/* ── LOGO IMAGE ── */
-.logo-img    { width:26px;height:26px;object-fit:contain;animation:wingFlap 6s ease-in-out infinite;flex-shrink:0; }
-.logo-img-sm { width:20px;height:20px;object-fit:contain;animation:wingFlap 5s ease-in-out infinite;flex-shrink:0; }
-
-/* ═══ BUTTONS ═══ */
-.btn-grad {
-  background: linear-gradient(135deg, var(--c1), var(--c2));
-  color: #07070f; font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.82rem; font-weight: 700;
-  padding: 0.75rem 1.8rem; border: none; border-radius: 100px;
-  cursor: pointer; transition: opacity .2s, transform .2s;
-  white-space: nowrap; text-decoration: none; display: inline-block;
-}
-.btn-grad:hover { opacity: .88; transform: translateY(-1px); }
-.btn-grad.sm   { padding: 0.55rem 1.2rem; font-size: 0.74rem; }
-.btn-grad.full { width: 100%; padding: 0.9rem; font-size: 0.86rem; text-align: center; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--grad); color: #07070f; }
+.btn-primary:hover { opacity: .88; }
 .btn-ghost {
-  background: transparent; border: 1px solid rgba(255,255,255,0.12);
-  color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.78rem; font-weight: 500;
-  padding: 0.7rem 1.4rem; border-radius: 100px; cursor: pointer; transition: all .2s; white-space: nowrap;
+  background: transparent; color: var(--t2);
+  border: 1px solid var(--border);
 }
-.btn-ghost:hover { border-color: rgba(181,142,255,.4); color: var(--c1); }
-.btn-ghost.sm   { padding: 0.5rem 1rem; font-size: 0.72rem; }
+.btn-ghost:hover { background: var(--hover); color: var(--t1); border-color: rgba(255,255,255,.12); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 4px; }
+.btn-full { width: 100%; }
+.btn-icon { padding: 6px; border-radius: var(--r); }
 
 /* ── INPUTS ── */
 .inp {
-  background: var(--surface2); border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.85rem; font-weight: 400;
-  padding: 0.82rem 1.3rem; border-radius: 100px;
-  outline: none; transition: border-color .2s, box-shadow .2s; width: 100%;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,.07);
+  color: var(--t1); font-family: var(--font); font-size: 14px;
+  padding: 8px 12px; border-radius: var(--r);
+  outline: none; width: 100%;
+  transition: border-color .15s, box-shadow .15s;
 }
-.inp:focus { border-color: rgba(181,142,255,.5); box-shadow: 0 0 0 3px rgba(181,142,255,.1); }
-.inp::placeholder { color: var(--muted); }
-textarea.inp { border-radius: 16px; resize: none; }
-select.inp   { appearance: none; cursor: pointer; }
-.f-label { display: block; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.45rem; }
+.inp:focus { border-color: rgba(180,142,255,.5); box-shadow: 0 0 0 3px rgba(180,142,255,.12); }
+.inp::placeholder { color: var(--t4); }
+textarea.inp { resize: none; border-radius: var(--r); line-height: 1.6; }
+select.inp { appearance: none; cursor: pointer; }
+.inp-label {
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: .07em; text-transform: uppercase;
+  color: var(--t3); margin-bottom: 5px;
+}
 
-/* ═══ APP SHELL ═══ */
-#app { position: relative; z-index: 1; display: flex; height: 100vh; overflow: hidden; }
+/* ═══ APP ═══ */
+#app { display: flex; height: 100vh; overflow: hidden; position: relative; }
 .view { display: none; width: 100%; }
 .view.show { display: flex; }
 
-/* ═══ AUTH VIEW ═══ */
-#v-auth { align-items: center; justify-content: center; flex-direction: column; min-height: 100vh; padding: 2rem; }
+/* ═══ AUTH ═══ */
+#v-auth {
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 1.5rem; min-height: 100vh;
+  background: var(--bg);
+}
 .auth-card {
-  width: 100%; max-width: 430px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: calc(var(--r) * 1.5); overflow: hidden;
-  animation: riseIn 0.5s cubic-bezier(.16,1,.3,1) both;
+  width: 100%; max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: slideUp .28s cubic-bezier(.16,1,.3,1) both;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
 }
-.auth-top {
-  padding: 2.5rem 2.5rem 2rem; border-bottom: 1px solid var(--border);
-  position: relative; overflow: hidden;
+.auth-header {
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--sidebar);
+  text-align: center;
 }
-.auth-top::after {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--c1), var(--c2), var(--c3), transparent);
+.auth-wordmark {
+  display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
 }
-.auth-top::before {
-  content: ''; position: absolute; top: -40%; left: 50%; transform: translateX(-50%);
-  width: 400px; height: 300px;
-  background: radial-gradient(ellipse, rgba(181,142,255,.1), transparent 70%); pointer-events: none;
+.auth-logo-img {
+  width: 52px; height: 52px; object-fit: contain; display: block;
+  filter: drop-shadow(0 0 12px rgba(180,142,255,.45));
 }
-.auth-logo {
-  font-family: 'Playfair Display', serif; font-weight: 900; font-size: 2rem;
-  letter-spacing: -0.03em; line-height: 1; margin-bottom: 0.5rem;
-  display: flex; align-items: center; gap: 0.45rem;
+/* auth wordmark — image only */
+.auth-tagline { font-size: 12px; color: var(--t3); }
+.auth-body { padding: 20px 24px 24px; }
+.f-row { margin-bottom: 12px; }
+.node-row { display: flex; gap: 8px; }
+.node-row .inp { flex: 1; }
+.node-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--t3); margin: 7px 0 16px;
 }
-.auth-stage {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  background: rgba(181,142,255,.1); border: 1px solid rgba(181,142,255,.28);
-  border-radius: 100px; padding: 0.32rem 0.85rem;
-  font-size: 0.65rem; font-weight: 600; color: var(--c1); letter-spacing: 0.06em; text-transform: uppercase;
+.ns-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--t4); flex-shrink: 0; }
+.ns-dot.ok { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.auth-sep {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--t4);
+  letter-spacing: .06em; text-transform: uppercase;
+  margin: 16px 0 12px;
 }
-.stage-pip { width: 6px; height: 6px; border-radius: 50%; background: var(--c2); animation: pulse 2.5s ease-in-out infinite; }
-.auth-body { padding: 2rem 2.5rem 2.5rem; }
-.node-row  { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
-.node-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--muted); margin-bottom: 1.5rem; }
-.ns-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-.ns-dot.ok { background: var(--c2); box-shadow: 0 0 6px var(--c2); animation: pulse 2.5s ease-in-out infinite; }
-.sign-in-row { display: flex; gap: 0.5rem; }
-.auth-divider {
-  display: flex; align-items: center; gap: 0.75rem;
-  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
-  margin: 1.4rem 0 1.2rem;
+.auth-sep::before, .auth-sep::after { content:''; flex:1; height:1px; background:var(--border); }
+.complete-sec { display: none; }
+.complete-sec.show { display: block; }
+.pw-wrap { position: relative; }
+.pw-wrap .inp { padding-right: 36px; }
+.pw-eye {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--t3); cursor: pointer;
+  font-size: 12px; padding: 2px; transition: color .12s;
 }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.complete-section { display: none; }
-.complete-section.show { display: block; }
-.token-wrap { position: relative; margin-bottom: 0.3rem; }
-.token-wrap .inp { padding-right: 3rem; }
-.token-eye { position: absolute; right: 1.1rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; transition: color .15s; }
-.token-eye:hover { color: var(--text); }
-.autofill-badge { display: none; align-items: center; gap: 0.35rem; font-size: 0.65rem; font-weight: 600; color: var(--c2); margin-bottom: 1rem; padding-left: 0.25rem; }
-.autofill-badge.show { display: flex; }
-.autofill-badge::before { content: '✦'; }
+.pw-eye:hover { color: var(--t1); }
+.autofill-note { display: none; font-size: 11px; color: var(--green); margin-top: 3px; }
+.autofill-note.show { display: block; }
 
-/* ═══ MAIN VIEW ═══ */
+/* ═══ USERNAME SETUP OVERLAY ═══ */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.8); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; padding: 1rem;
+}
+.overlay.open { display: flex; }
+.setup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px; width: 100%; max-width: 360px;
+  padding: 24px;
+  animation: slideUp .22s ease both;
+  box-shadow: 0 12px 40px rgba(0,0,0,.6);
+}
+.setup-card h2 {
+  font-size: 17px; font-weight: 700; color: var(--t1);
+  margin-bottom: 5px;
+}
+.setup-card p { font-size: 13px; color: var(--t3); margin-bottom: 18px; }
+.uname-hint { font-size: 12px; min-height: 15px; margin-top: 4px; }
+.uname-hint.ok  { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.uname-hint.err { color: var(--red); }
+
+/* ═══ MAIN ═══ */
 #v-main { flex-direction: row; height: 100vh; overflow: hidden; }
 
 /* ── SIDEBAR ── */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--sidebar);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   height: 100vh; overflow: hidden;
-  background: rgba(7,7,15,0.8);
-  backdrop-filter: blur(18px);
 }
-.sb-logo {
-  padding: 1.2rem 1.2rem 1rem; border-bottom: 1px solid var(--border);
-  font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.2rem;
-  letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.5rem;
+.sb-top {
+  padding: 12px 10px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
 }
-.sb-nav { flex: 1; padding: 0.5rem 0; overflow-y: auto; }
+.sb-logo-img { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(180,142,255,.4)); }
+/* sb wordmark — image only */
+.sb-nav { flex: 1; overflow-y: auto; padding: 8px 6px; }
+.sb-sec-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--t4); padding: 12px 8px 4px;
+  user-select: none;
+}
 .sb-item {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.65rem 1.2rem; color: var(--muted); cursor: pointer; transition: all .15s;
-  font-size: 0.78rem; font-weight: 500; border-left: 2px solid transparent;
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 10px; color: var(--t3);
+  cursor: pointer; border-radius: 5px;
+  margin-bottom: 1px;
+  font-size: 13px; font-weight: 500;
+  transition: background .08s, color .08s;
+  position: relative;
 }
-.sb-item:hover { color: var(--text); background: rgba(255,255,255,.025); }
-.sb-item.on { color: var(--c1); border-left-color: var(--c1); background: rgba(181,142,255,.07); }
-.sb-item .ico { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
-.sb-footer { border-top: 1px solid var(--border); padding: 0.85rem 1.2rem; }
-.sb-me { display: flex; align-items: center; gap: 0.65rem; }
+.sb-item:hover { background: var(--hover); color: var(--t2); }
+.sb-item.on { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+.sb-item .ico { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.sb-notif-pip {
+  margin-left: auto; background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 17px; height: 17px;
+  padding: 0 4px; border-radius: 9px;
+  display: none; align-items: center; justify-content: center;
+}
+.sb-notif-pip.show { display: flex; }
+
+.sb-bottom {
+  border-top: 1px solid var(--border);
+  padding: 8px 10px 10px;
+}
+.sb-user { display: flex; align-items: center; gap: 8px; }
+.sb-user-info { flex: 1; min-width: 0; }
+.sb-uname {
+  font-size: 13px; font-weight: 600; color: var(--t1);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sb-domain {
+  font-size: 11px; color: var(--t3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── AVATAR ── */
 .ava {
   flex-shrink: 0; border-radius: 50%;
-  background: linear-gradient(135deg, var(--c1), var(--c2));
+  background: var(--surface3);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; color: #07070f; overflow: hidden;
+  font-weight: 700; color: var(--t1); overflow: hidden;
 }
-.ava img { width: 100%; height: 100%; object-fit: cover; }
-.sb-me-info { flex: 1; min-width: 0; }
-.sb-me-name { font-size: 0.78rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-me-node { font-size: 0.62rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.btn-out {
-  background: none; border: 1px solid rgba(255,255,255,.08); color: var(--muted);
-  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.6rem; font-weight: 700;
-  letter-spacing: .05em; text-transform: uppercase; padding: 0.3rem 0.65rem;
-  border-radius: 100px; cursor: pointer; transition: all .15s; flex-shrink: 0;
-}
-.btn-out:hover { color: var(--danger); border-color: var(--danger); }
+.ava img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.ava.rounded { border-radius: 10px; }
 
-/* ── BOTTOM NAV (mobile only) ── */
-.bottom-nav {
-  display: none; position: fixed; bottom: 0; left: 0; right: 0;
-  height: var(--bottom-nav-h); z-index: 100;
-  background: rgba(7,7,15,0.95); backdrop-filter: blur(20px);
+/* ── BOTTOM NAV ── */
+.bnav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--sidebar);
   border-top: 1px solid var(--border);
-  align-items: center; justify-content: space-around;
-  padding: 0 0.25rem;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 10px);
 }
-.bn-item {
-  display: flex; flex-direction: column; align-items: center; gap: 0.18rem;
-  padding: 0.35rem 1rem; color: var(--muted); cursor: pointer; transition: color .15s;
-  font-size: 0.55rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+.bnav-inner {
+  display: flex;
+  height: var(--bnav-h);
+  align-items: center;
 }
-.bn-item .ico { font-size: 20px; line-height: 1; }
-.bn-item.on { color: var(--c1); }
+.bni {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  padding: 6px 8px; color: var(--t3);
+  cursor: pointer; font-size: 9px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  transition: color .1s; position: relative;
+  border-radius: 6px; margin: 0 2px;
+}
+.bni .ico { font-size: 18px; line-height: 1; }
+.bni.on { color: var(--accent); }
+.bni:hover { background: var(--hover); }
+.bni-pip {
+  position: absolute; top: 5px; right: calc(50% - 18px);
+  background: var(--red); color: #fff;
+  font-size: 9px; font-weight: 700;
+  min-width: 14px; height: 14px; padding: 0 3px;
+  border-radius: 7px; display: none;
+  align-items: center; justify-content: center;
+}
+.bni-pip.show { display: flex; }
 
 /* ── MAIN COLUMN ── */
 .col {
   flex: 1; min-width: 0;
   display: flex; flex-direction: column;
   height: 100vh; overflow: hidden;
+  background: var(--bg);
   border-right: 1px solid var(--border);
 }
 .col-head {
-  padding: 0.9rem 1.3rem; border-bottom: 1px solid var(--border);
+  height: 46px; padding: 0 14px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0; background: rgba(7,7,15,.82); backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
-.col-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.05rem; font-weight: 700; }
+.col-title { font-size: 14px; font-weight: 700; color: var(--t1); }
+.col-actions { display: flex; gap: 6px; align-items: center; }
 
 /* ── PAGES ── */
-.page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.page { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
 .page.show { display: flex; }
 .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
-.scroll::-webkit-scrollbar { width: 3px; }
-.scroll::-webkit-scrollbar-track { background: transparent; }
-.scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.06); border-radius: 2px; }
-
-/* ── COMPOSE ── */
-.compose { padding: 1rem 1.3rem; border-bottom: 1px solid var(--border); display: flex; gap: 0.85rem; flex-shrink: 0; }
-.compose-body { flex: 1; }
-.compose-ta {
-  width: 100%; background: transparent; border: none; color: var(--text);
-  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 400;
-  line-height: 1.65; resize: none; outline: none; min-height: 48px;
-}
-.compose-ta::placeholder { color: var(--muted); }
-.compose-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
-.char-ct { font-size: 0.65rem; color: var(--muted); }
-.char-ct.warn { color: var(--c4); }
-.char-ct.over { color: var(--danger); }
-
-/* ── POSTS ── */
-.post { padding: 1rem 1.3rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; animation: fadeUp .28s ease both; }
-.post:hover { background: rgba(255,255,255,.02); }
-.post-hd { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
-.post-meta { flex: 1; min-width: 0; }
-.post-author { font-size: 0.8rem; font-weight: 600; }
-.post-node   { font-size: 0.65rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.post-time   { font-size: 0.62rem; color: var(--muted); flex-shrink: 0; }
-.post-body   { font-size: 0.88rem; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
-.post-reply-to { font-size: 0.65rem; color: var(--muted); padding: 0.25rem 0.7rem; border-left: 1.5px solid rgba(255,255,255,.1); margin-bottom: 0.5rem; }
-.post-actions { display: flex; gap: 1.25rem; margin-top: 0.75rem; flex-wrap: wrap; }
-.pa { display: flex; align-items: center; gap: 0.35rem; color: var(--muted); font-size: 0.72rem; font-weight: 500; cursor: pointer; background: none; border: none; font-family: 'Plus Jakarta Sans', sans-serif; padding: 0; transition: color .15s; }
-.pa:hover  { color: var(--c2); }
-.pa.active { color: var(--c1); }
-
-/* ── NODES ── */
-.node-card { padding: 0.9rem 1.3rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: background .12s; }
-.node-card:hover { background: rgba(255,255,255,.02); }
-.node-led { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.node-led.grey  { background: var(--c1); box-shadow: 0 0 8px var(--c1); }
-.node-led.light { background: var(--c2); box-shadow: 0 0 8px var(--c2); }
-.node-led.dark  { background: rgba(255,255,255,.2); }
-.node-info { flex: 1; min-width: 0; }
-.node-domain { font-size: 0.82rem; font-weight: 600; }
-.node-name   { font-size: 0.68rem; color: var(--muted); }
-
-/* ── PILL BADGES ── */
-.pill-badge { font-size: 0.62rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 0.22rem 0.7rem; border-radius: 100px; display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--border); white-space: nowrap; }
-.pill-badge .pip { width: 5px; height: 5px; border-radius: 50%; }
-.pill-badge.grey  { background: rgba(181,142,255,.08); color: var(--c1); border-color: rgba(181,142,255,.25); }
-.pill-badge.grey  .pip { background: var(--c1); }
-.pill-badge.light { background: rgba(93,232,212,.08);  color: var(--c2); border-color: rgba(93,232,212,.25); }
-.pill-badge.light .pip { background: var(--c2); }
-.pill-badge.dark  { background: rgba(255,255,255,.04); color: var(--muted); }
-.pill-badge.dark  .pip { background: rgba(255,255,255,.3); }
-.pill-badge.pro   { background: rgba(255,217,122,.08); color: var(--c4); border-color: rgba(255,217,122,.28); }
-.pill-badge.pro   .pip { background: var(--c4); }
-.node-count { font-size: 0.7rem; color: var(--muted); }
-
-/* ── PROFILE ── */
-.profile-hero { padding: 1.5rem 1.3rem 1.25rem; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, rgba(181,142,255,.07) 0%, transparent 100%); position: relative; overflow: hidden; }
-.profile-hero::before { content: ''; position: absolute; top: -30%; left: 50%; transform: translateX(-50%); width: 500px; height: 300px; background: radial-gradient(ellipse, rgba(181,142,255,.1), transparent 70%); pointer-events: none; }
-.prf-ava-lg { border-radius: 50%; background: linear-gradient(135deg, var(--c1), var(--c2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #07070f; overflow: hidden; margin-bottom: 1rem; border: 2px solid rgba(255,255,255,.08); }
-.prf-ava-lg img { width: 100%; height: 100%; object-fit: cover; }
-.prf-name   { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 1.5rem; letter-spacing: -0.02em; line-height: 1.1; }
-.prf-handle { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
-.prf-bio    { font-size: 0.82rem; font-weight: 300; color: var(--muted); margin-top: 0.75rem; line-height: 1.65; }
-.prf-stats  { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; }
-.stat-n { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 900; }
-.stat-l { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-
-/* ── RIGHT PANEL ── */
-.panel { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: rgba(7,7,15,.45); }
-.panel-sec { border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.panel-h { padding: 0.75rem 1.25rem; font-size: 0.62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
-.panel-body { padding: 1rem 1.25rem; }
-.pnm { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: color .12s; }
-.pnm:last-child { border-bottom: none; }
-.pnm:hover { color: var(--c1); }
-.pnm-d { flex: 1; }
-.pnm-c { font-size: 0.62rem; color: var(--muted); }
 
 /* ── TABS ── */
-.tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
-.tab { flex: 1; padding: 0.7rem 0.5rem; text-align: center; font-size: 0.7rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 1.5px solid transparent; transition: all .15s; white-space: nowrap; min-width: 55px; }
-.tab:hover { color: var(--text); }
-.tab.on    { color: var(--c1); border-bottom-color: var(--c1); }
+.tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; overflow-x: auto;
+  background: var(--bg);
+}
+.tabs::-webkit-scrollbar { height: 0; }
+.tab {
+  padding: 9px 13px; font-size: 13px; font-weight: 500;
+  color: var(--t3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .1s, border-color .1s;
+}
+.tab:hover { color: var(--t2); }
+.tab.on { color: var(--t1); border-bottom-color: var(--g1); font-weight: 600; }
 
-/* ── REPLY BAR ── */
-.reply-bar { border-top: 1px solid var(--border); padding: 0.75rem 1.3rem; display: flex; gap: 0.75rem; align-items: flex-start; flex-shrink: 0; background: rgba(7,7,15,.9); backdrop-filter: blur(14px); }
-.reply-ta { flex: 1; min-height: 36px; background: transparent; border: none; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.88rem; outline: none; resize: none; padding: 0.35rem 0; line-height: 1.6; }
-.reply-ta::placeholder { color: var(--muted); }
+/* ── COMPOSE ── */
+.compose {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px; flex-shrink: 0;
+  background: var(--bg);
+}
+.compose-right { flex: 1; min-width: 0; }
+.compose-ta {
+  width: 100%; background: transparent;
+  border: none; color: var(--t1);
+  font-family: var(--font); font-size: 14px;
+  line-height: 1.65; resize: none; outline: none;
+  min-height: 42px;
+}
+.compose-ta::placeholder { color: var(--t4); }
+.compose-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border2);
+}
+.compose-left-actions { display: flex; align-items: center; gap: 6px; }
+.char-count { font-size: 11px; color: var(--t3); }
+.char-count.warn { color: var(--yellow); }
+.char-count.over { color: var(--red); }
+.cw-btn {
+  font-size: 11px; color: var(--t3); background: none; border: none;
+  cursor: pointer; font-family: var(--font); padding: 2px 6px;
+  border-radius: 4px; font-weight: 500; transition: color .1s, background .1s;
+}
+.cw-btn:hover { background: var(--surface2); color: var(--t2); }
+.cw-row { margin-bottom: 7px; display: none; }
+.cw-row.show { display: block; }
+.cw-input {
+  width: 100%; background: rgba(250,166,26,.06);
+  border: 1px solid rgba(250,166,26,.22);
+  color: var(--yellow); font-family: var(--font); font-size: 12px;
+  padding: 5px 10px; border-radius: var(--r); outline: none;
+}
+.cw-input::placeholder { color: rgba(250,166,26,.35); }
 
-/* ── EXPLORE BAR ── */
-.explore-bar { padding: 0.85rem 1.3rem; border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; flex-shrink: 0; }
+/* ── POSTS ── */
+.post {
+  padding: 12px 14px; border-bottom: 1px solid var(--border2);
+  cursor: pointer; transition: background .08s;
+  animation: fadeUp .2s ease both;
+}
+.post:hover { background: var(--hover); }
+.post-top { display: flex; gap: 9px; }
+.post-right { flex: 1; min-width: 0; }
+.post-name-row {
+  display: flex; align-items: baseline;
+  gap: 5px; flex-wrap: wrap; margin-bottom: 2px;
+}
+.post-uname { font-size: 13px; font-weight: 600; color: var(--t1); }
+.post-handle { font-size: 12px; color: var(--t3); }
+.post-when   { font-size: 11px; color: var(--t4); margin-left: auto; flex-shrink: 0; }
+.post-cw-bar {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(250,166,26,.07);
+  border: 1px solid rgba(250,166,26,.2);
+  color: var(--yellow); font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 100px;
+  margin-bottom: 5px; cursor: pointer; user-select: none;
+}
+.post-body {
+  font-size: 14px; line-height: 1.65;
+  white-space: pre-wrap; word-break: break-word;
+  color: var(--t2);
+}
+.post-edited { font-size: 11px; color: var(--t4); margin-top: 2px; }
+.refly-embed {
+  border: 1px solid var(--border); border-radius: var(--r);
+  padding: 8px 11px; margin-top: 7px;
+  background: var(--surface2); font-size: 13px;
+}
+.refly-from { font-size: 12px; font-weight: 600; color: var(--t3); margin-bottom: 3px; }
+.refly-body { color: var(--t3); line-height: 1.55; }
+.post-actions { display: flex; gap: 2px; margin-top: 8px; }
+.pa {
+  display: flex; align-items: center; gap: 4px;
+  color: var(--t3); font-size: 12px; font-weight: 500;
+  cursor: pointer; background: none; border: none;
+  font-family: var(--font); padding: 4px 7px; border-radius: 5px;
+  transition: color .1s, background .08s;
+}
+.pa:hover { background: var(--surface2); color: var(--t2); }
+.pa.liked      { color: var(--g3); }
+.pa.reflied    { color: var(--green); }
+.pa.bookmarked { color: var(--yellow); }
 
-/* ── MODALS ── */
-.modal-bg { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(7,7,15,.82); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 1rem; }
-.modal-bg.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: calc(var(--r) * 1.3); width: 100%; max-width: 440px; max-height: 88vh; overflow-y: auto; animation: riseIn .25s cubic-bezier(.16,1,.3,1) both; }
-.modal-head { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.modal-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1rem; font-weight: 700; }
-.modal-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; transition: color .15s; }
-.modal-x:hover { color: var(--text); }
-.modal-body { padding: 1.5rem; }
-.f-group { margin-bottom: 1rem; }
-
-/* ── STATES ── */
-.empty { padding: 3rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.82rem; font-weight: 300; }
-.empty-ico { font-size: 2rem; opacity: .2; margin-bottom: 0.75rem; }
-.loading-state { padding: 2rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; color: var(--muted); font-size: 0.78rem; }
-.spinner { width: 16px; height: 16px; border: 1.5px solid rgba(255,255,255,.1); border-top-color: var(--c1); border-radius: 50%; animation: spin .65s linear infinite; flex-shrink: 0; }
-
-/* ── TOAST ── */
-#toasts { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem; z-index: 300; pointer-events: none; }
-.toast { padding: 0.65rem 1.1rem; background: var(--surface2); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(14px); font-size: 0.75rem; font-weight: 500; max-width: 280px; display: flex; align-items: center; gap: 0.6rem; border-radius: 100px; animation: riseIn .2s ease both; }
-.toast.ok  { border-color: rgba(93,232,212,.35);  color: var(--c2); }
-.toast.err { border-color: rgba(255,109,177,.35);  color: var(--danger); }
-.toast.inf { border-color: rgba(181,142,255,.35); color: var(--c1); }
-
-/* ═══ RESPONSIVE ═══ */
-
-/* Collapse panel */
-@media (max-width: 1100px) { .panel { display: none; } }
-
-/* Collapse sidebar labels at 860px */
-@media (max-width: 860px) {
-  :root { --sidebar-w: 58px; }
-  .sb-logo .label { display: none; }
-  .sb-logo { justify-content: center; padding: 1rem 0; }
-  .sb-item span:not(.ico) { display: none; }
-  .sb-item { justify-content: center; padding: 0.7rem; border-left: none; border-radius: 10px; margin: 2px 6px; }
-  .sb-item.on { background: rgba(181,142,255,.12); border-left: none; }
-  .sb-me-info, .btn-out { display: none; }
-  .sb-me { justify-content: center; }
-  .sb-footer { padding: 0.75rem 0; display: flex; justify-content: center; }
+/* ── NOTIFICATIONS ── */
+.notif {
+  padding: 11px 14px; border-bottom: 1px solid var(--border2);
+  display: flex; gap: 9px;
+  animation: fadeUp .18s ease both;
+  cursor: pointer; transition: background .08s;
+}
+.notif:hover { background: var(--hover); }
+.notif.unread { background: var(--accent-lo); }
+.notif-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+.notif-body { flex: 1; min-width: 0; }
+.notif-text { font-size: 13px; color: var(--t2); line-height: 1.5; }
+.notif-text b { color: var(--t1); font-weight: 600; }
+.notif-time { font-size: 11px; color: var(--t4); margin-top: 1px; }
+.notif-quote {
+  font-size: 12px; color: var(--t3);
+  margin-top: 4px; padding: 5px 9px;
+  background: var(--surface2); border-radius: 5px;
+  border-left: 2px solid var(--border);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Full mobile: hide sidebar, show bottom nav */
-@media (max-width: 600px) {
+/* ── NEWS ── */
+.news-item {
+  padding: 13px 14px; border-bottom: 1px solid var(--border2);
+  animation: fadeUp .2s ease both;
+}
+.news-tag {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 4px;
+}
+.news-title { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 4px; line-height: 1.4; }
+.news-body  { font-size: 13px; color: var(--t3); line-height: 1.6; }
+.news-footer { display: flex; align-items: center; gap: 10px; margin-top: 7px; }
+.news-date { font-size: 11px; color: var(--t4); }
+.news-link {
+  font-size: 12px; color: var(--g1); font-weight: 500;
+  text-decoration: none; transition: color .1s;
+}
+.news-link:hover { color: var(--t1); }
+.news-empty {
+  padding: 20px 14px; font-size: 12px; color: var(--t3);
+  background: var(--surface2); border-radius: var(--r); margin: 12px 14px;
+  border: 1px solid var(--border2);
+}
+.news-empty code { color: var(--g1); font-size: 12px; background: rgba(180,142,255,.1); padding: 1px 5px; border-radius: 3px; }
+
+/* ── SEARCH ── */
+.search-bar {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 7px; flex-shrink: 0; background: var(--bg);
+}
+.result-section-hdr {
+  padding: 7px 14px; font-size: 10px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--t4); border-bottom: 1px solid var(--border2);
+  background: var(--bg);
+}
+
+/* ── NODES ── */
+.node-card {
+  padding: 10px 14px; border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: background .08s;
+}
+.node-card:hover { background: var(--hover); }
+.node-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; overflow: hidden;
+}
+.node-icon img { width: 100%; height: 100%; object-fit: cover; }
+.node-info { flex: 1; min-width: 0; }
+.node-dom  { font-size: 13px; font-weight: 600; color: var(--t1); }
+.node-desc { font-size: 12px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 100px; border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.node-badge.light { color: var(--green); border-color: rgba(59,165,92,.3); background: rgba(59,165,92,.06); }
+.node-badge.grey  { color: var(--g1); border-color: rgba(180,142,255,.3); background: var(--accent-lo); }
+.node-badge.dark  { color: var(--t3); }
+.node-members { font-size: 12px; color: var(--t4); flex-shrink: 0; }
+
+/* ── PROFILE ── */
+.profile-banner {
+  height: 100px; flex-shrink: 0;
+  background: linear-gradient(135deg, #1a1030 0%, #0d1a2e 40%, #1a0d2e 100%);
+  position: relative; overflow: hidden;
+}
+.profile-banner::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(180,142,255,0.18) 0%, rgba(93,232,212,0.10) 60%, rgba(247,197,255,0.08) 100%);
+  pointer-events: none;
+}
+.profile-banner img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+.profile-info { padding: 10px 14px 14px; border-bottom: 1px solid var(--border); }
+.prf-ava-wrap { margin-top: -34px; margin-bottom: 8px; }
+.prf-ava {
+  width: 68px; height: 68px; border-radius: 50%;
+  border: 3px solid var(--bg);
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700; color: var(--t1); overflow: hidden;
+}
+.prf-ava img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.prf-name   { font-size: 17px; font-weight: 700; color: var(--t1); }
+.prf-handle { font-size: 13px; color: var(--t3); margin-top: 1px; }
+.prf-bio    { font-size: 13px; color: var(--t2); margin-top: 9px; line-height: 1.6; }
+.prf-meta   { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+.prf-stat-n { font-size: 14px; font-weight: 700; color: var(--t1); }
+.prf-stat-l { font-size: 11px; color: var(--t3); }
+.prf-pills  { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.pill {
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border-radius: 100px; border: 1px solid var(--border);
+}
+.pill.pro   { color: var(--yellow); border-color: rgba(250,166,26,.28); background: rgba(250,166,26,.07); }
+.pill.admin { color: var(--red);    border-color: rgba(237,66,69,.28);  background: rgba(237,66,69,.06); }
+
+/* ── POST DETAIL ── */
+.post-detail { padding: 14px; border-bottom: 1px solid var(--border); }
+.post-detail .post-body { font-size: 15px; margin-top: 10px; }
+.post-detail-stats {
+  display: flex; gap: 14px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border2);
+}
+.pd-stat { font-size: 13px; color: var(--t3); }
+.pd-stat b { color: var(--t1); }
+
+/* ── REPLY BAR ── */
+.reply-bar {
+  border-top: 1px solid var(--border);
+  padding: 9px 14px; display: flex; gap: 9px;
+  align-items: flex-start; flex-shrink: 0;
+  background: var(--bg);
+}
+.reply-ta {
+  flex: 1; min-height: 34px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--t1); font-family: var(--font); font-size: 14px;
+  outline: none; resize: none;
+  padding: 7px 11px; line-height: 1.6;
+  border-radius: var(--r); transition: border-color .15s;
+}
+.reply-ta:focus { border-color: rgba(180,142,255,.45); }
+.reply-ta::placeholder { color: var(--t4); }
+
+/* ── RIGHT PANEL ── */
+.panel {
+  width: 248px; flex-shrink: 0;
+  background: var(--sidebar);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  height: 100vh; overflow: hidden;
+}
+.panel-section { border-bottom: 1px solid var(--border); }
+.panel-head { padding: 10px 12px; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--t4); }
+.panel-body { padding: 10px 12px; }
+.panel-node-row { display: flex; align-items: center; gap: 8px; }
+.panel-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 5px var(--green);
+  background: var(--g2); box-shadow: 0 0 5px var(--g2);
+  animation: blink 3s ease infinite;
+}
+.panel-node-domain { font-size: 13px; font-weight: 600; color: var(--t1); }
+.panel-node-type   { font-size: 11px; color: var(--t3); margin-top: 1px; }
+.panel-scroll { flex: 1; overflow-y: auto; }
+.panel-node-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 12px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border-bottom: 1px solid var(--border2);
+  transition: background .08s;
+}
+.panel-node-item:hover { background: var(--hover); color: var(--t1); }
+.panel-node-item:last-child { border-bottom: none; }
+.pni-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--t2); }
+.pni-count { font-size: 11px; color: var(--t4); }
+.pni-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── MODALS ── */
+.modal-bg {
+  display: none; position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 1rem;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; width: 100%; max-width: 420px;
+  max-height: 88vh; overflow-y: auto;
+  animation: slideUp .2s cubic-bezier(.16,1,.3,1) both;
+  box-shadow: 0 12px 40px rgba(0,0,0,.55);
+}
+.modal-header {
+  padding: 16px 18px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--t1); }
+.modal-close { background: none; border: none; color: var(--t3); cursor: pointer; font-size: 17px; line-height: 1; transition: color .1s; }
+.modal-close:hover { color: var(--t1); }
+.modal-body { padding: 16px 18px 20px; }
+.modal-row { margin-bottom: 12px; }
+
+/* ── EMPTY / LOADING ── */
+.empty-state {
+  padding: 36px 20px; text-align: center;
+  color: var(--t3);
+}
+.empty-ico { font-size: 24px; opacity: .25; display: block; margin-bottom: 8px; }
+.empty-msg { font-size: 13px; }
+.loading-row {
+  padding: 20px; display: flex;
+  align-items: center; justify-content: center;
+  gap: 8px; color: var(--t3); font-size: 13px;
+}
+.spinner {
+  width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,.06);
+  border-top-color: var(--g1);
+  border-radius: 50%; animation: spin .55s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── TOASTS ── */
+#toasts {
+  position: fixed; bottom: 16px; right: 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  z-index: 600; pointer-events: none;
+}
+.toast {
+  padding: 9px 13px; font-size: 13px; font-weight: 500;
+  max-width: 260px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 7px;
+  display: flex; align-items: center; gap: 7px;
+  animation: slideUp .18s ease both;
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  color: var(--t1);
+}
+.toast.ok  { border-left: 3px solid var(--green); }
+.toast.err { border-left: 3px solid var(--red); }
+.toast.inf { border-left: 3px solid var(--g1); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1080px) { .panel { display: none; } }
+
+@media (max-width: 800px) {
+  :root { --sidebar-w: 50px; }
+  .sb-top { padding: 10px 6px; justify-content: center; }
+  /* wordmark is image-only, nothing to hide */
+  .sb-sec-label { display: none; }
+  .sb-item span:not(.ico) { display: none; }
+  .sb-item { justify-content: center; padding: 8px; }
+  .sb-notif-pip { position: absolute; top: 3px; right: 3px; }
+  .sb-user-info { display: none; }
+  .sb-user { justify-content: center; }
+  .sb-bottom { padding: 8px 0; display: flex; justify-content: center; }
+  .sb-bottom .btn-xs { display: none; }
+}
+
+@media (max-width: 560px) {
   .sidebar { display: none; }
-  .bottom-nav { display: flex; }
-  .col { height: calc(100vh - var(--bottom-nav-h)); }
-  #toasts { bottom: calc(var(--bottom-nav-h) + 0.75rem); right: 0.75rem; }
-  .auth-card { border-radius: var(--r); }
-  .auth-top  { padding: 1.75rem 1.25rem 1.5rem; }
-  .auth-body { padding: 1.5rem 1.25rem; }
-  .col-head     { padding: 0.75rem 1rem; }
-  .compose      { padding: 0.85rem 1rem; }
-  .post         { padding: 0.85rem 1rem; }
-  .node-card    { padding: 0.75rem 1rem; }
-  .explore-bar  { padding: 0.75rem 1rem; }
-  .reply-bar    { padding: 0.65rem 1rem; }
-  .profile-hero { padding: 1.25rem 1rem 1rem; }
+  .bnav { display: block; }
+  .col {
+    height: calc(100vh - var(--bnav-h) - max(env(safe-area-inset-bottom, 0px), 10px));
+  }
+  #toasts {
+    bottom: calc(var(--bnav-h) + max(env(safe-area-inset-bottom, 0px), 10px) + 8px);
+    right: 10px;
+  }
+  .col-head { padding: 0 11px; }
+  .compose, .post, .node-card { padding-left: 11px; padding-right: 11px; }
+  .news-item { padding-left: 11px; padding-right: 11px; }
+  .notif { padding-left: 11px; padding-right: 11px; }
 }
 </style>
 </head>
 <body>
-
-<div class="cursor" id="cursor"></div>
-<div class="orbs">
-  <div class="orb orb1"></div><div class="orb orb2"></div>
-  <div class="orb orb3"></div><div class="orb orb4"></div>
-</div>
 <div id="toasts"></div>
 
 <div id="app">
@@ -423,82 +729,108 @@ select.inp   { appearance: none; cursor: pointer; }
 <!-- ═══ AUTH VIEW ═══ -->
 <div id="v-auth" class="view">
   <div class="auth-card">
-    <div class="auth-top">
-      <div class="auth-logo">
-        <img src="https://app.btfly.social/btfly.png" class="logo-img" alt="BTFLY">
-        <span class="grad">BTFLY</span>
+    <div class="auth-header">
+      <div class="auth-wordmark">
+        <img src="/btfly.png" class="auth-logo-img" alt="BTFLY">
       </div>
-      <div class="auth-stage" style="margin-top:.6rem">
-        <span class="stage-pip"></span>Decentralised social
-      </div>
+      <div class="auth-tagline">Decentralised federated social</div>
     </div>
     <div class="auth-body">
-      <label class="f-label">Node Server</label>
-      <div class="node-row">
-        <input type="text" class="inp" id="inp-node" placeholder="node.example.social">
-        <button class="btn-ghost sm" onclick="applyNode()">Set</button>
-      </div>
-      <div class="node-status">
-        <div class="ns-dot" id="ns-dot"></div>
-        <span id="ns-txt">No node configured</span>
-      </div>
-      <div class="sign-in-row">
-        <button class="btn-grad" style="flex:1" onclick="startLogin()">↗&ensp;Sign in with Cloudlight</button>
-        <button class="btn-ghost sm" onclick="revealComplete()">Manual</button>
-      </div>
-      <div class="complete-section" id="complete-sec">
-        <div class="auth-divider">Complete Login</div>
-        <label class="f-label">btfly_token</label>
-        <div class="token-wrap">
-          <input type="password" class="inp" id="inp-token" placeholder="Returned from Cloudlight…">
-          <button class="token-eye" onclick="toggleVis('inp-token',this)">👁</button>
+      <div class="f-row">
+        <label class="inp-label">Node server</label>
+        <div class="node-row">
+          <input type="text" class="inp" id="inp-node" placeholder="node.example.social">
+          <button class="btn btn-ghost btn-sm" onclick="applyNode()">Set</button>
         </div>
-        <div class="autofill-badge" id="badge-token">Auto-filled from Cloudlight redirect</div>
-        <label class="f-label">node_key</label>
-        <div class="token-wrap" style="margin-bottom:.3rem">
-          <input type="password" class="inp" id="inp-key" placeholder="One-time key from your node…">
-          <button class="token-eye" onclick="toggleVis('inp-key',this)">👁</button>
+        <div class="node-status">
+          <div class="ns-dot" id="ns-dot"></div>
+          <span id="ns-txt">No node configured</span>
         </div>
-        <div class="autofill-badge" id="badge-key">Auto-filled from Cloudlight redirect</div>
-        <button class="btn-grad full" style="margin-top:.5rem" onclick="doCompleteLogin()">Complete &amp; Enter →</button>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-bottom:7px" onclick="startLogin()">Sign in with Cloudlight →</button>
+      <button class="btn btn-ghost btn-full btn-sm" onclick="showManual()">Manual token entry</button>
+
+      <div class="complete-sec" id="complete-sec">
+        <div class="auth-sep">Complete login</div>
+        <div class="f-row">
+          <label class="inp-label">btfly_token</label>
+          <div class="pw-wrap">
+            <input type="password" class="inp" id="inp-token" placeholder="Token from Cloudlight…">
+            <button class="pw-eye" onclick="togglePw('inp-token',this)">👁</button>
+          </div>
+          <div class="autofill-note" id="af-token">✓ Auto-filled from redirect</div>
+        </div>
+        <div class="f-row">
+          <label class="inp-label">node_key</label>
+          <div class="pw-wrap">
+            <input type="password" class="inp" id="inp-key" placeholder="One-time key…">
+            <button class="pw-eye" onclick="togglePw('inp-key',this)">👁</button>
+          </div>
+          <div class="autofill-note" id="af-key">✓ Auto-filled from redirect</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="doCompleteLogin()">Enter →</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- USERNAME SETUP OVERLAY -->
+<div class="overlay" id="overlay-username">
+  <div class="setup-card">
+    <h2>Choose your username</h2>
+    <p>How others on this node will see you. Letters, numbers and underscores, 2–30 characters.</p>
+    <div class="f-row">
+      <label class="inp-label">Username</label>
+      <input type="text" class="inp" id="inp-uname" placeholder="your_username" maxlength="30" oninput="previewUname(this.value)">
+      <div class="uname-hint" id="uname-hint"></div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doSetupUsername()">Continue →</button>
   </div>
 </div>
 
 <!-- ═══ MAIN VIEW ═══ -->
 <div id="v-main" class="view">
 
-  <!-- SIDEBAR (desktop) -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sb-logo">
-      <img src="https://app.btfly.social/btfly.png" class="logo-img-sm" alt="BTFLY">
-      <span class="label grad">BTFLY</span>
+    <div class="sb-top">
+      <img src="/btfly.png" class="sb-logo-img" alt="BTFLY">
     </div>
     <nav class="sb-nav">
-      <div class="sb-item on"  id="sbi-feed"    onclick="nav('feed')">    <span class="ico">◈</span><span>Feed</span></div>
-      <div class="sb-item"     id="sbi-explore" onclick="nav('explore')"> <span class="ico">⊹</span><span>Explore</span></div>
-      <div class="sb-item"     id="sbi-nodes"   onclick="nav('nodes')">   <span class="ico">⬡</span><span>Nodes</span></div>
-      <div class="sb-item"     id="sbi-profile" onclick="nav('profile')"> <span class="ico">◎</span><span>Profile</span></div>
+      <div class="sb-sec-label">Browse</div>
+      <div class="sb-item on"  id="sbi-feed"      onclick="nav('feed')">     <span class="ico">◈</span><span>Feed</span></div>
+      <div class="sb-item"     id="sbi-news"      onclick="nav('news')">     <span class="ico">📰</span><span>News</span></div>
+      <div class="sb-item"     id="sbi-explore"   onclick="nav('explore')">  <span class="ico">⊹</span><span>Explore</span></div>
+      <div class="sb-item"     id="sbi-nodes"     onclick="nav('nodes')">    <span class="ico">⬡</span><span>Nodes</span></div>
+      <div class="sb-sec-label">You</div>
+      <div class="sb-item"     id="sbi-notifs"    onclick="nav('notifs')">
+        <span class="ico">🔔</span><span>Notifications</span>
+        <span class="sb-notif-pip" id="sb-pip">0</span>
+      </div>
+      <div class="sb-item"     id="sbi-bookmarks" onclick="nav('bookmarks')"><span class="ico">🔖</span><span>Bookmarks</span></div>
+      <div class="sb-item"     id="sbi-profile"   onclick="nav('profile')">  <span class="ico">◎</span><span>Profile</span></div>
     </nav>
-    <div class="sb-footer">
-      <div class="sb-me">
-        <div class="ava" id="sb-ava" style="width:32px;height:32px;font-size:12px">?</div>
-        <div class="sb-me-info">
-          <div class="sb-me-name" id="sb-name">—</div>
-          <div class="sb-me-node" id="sb-node">—</div>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="ava" id="sb-ava" style="width:30px;height:30px;font-size:11px;cursor:pointer" onclick="nav('profile')"></div>
+        <div class="sb-user-info">
+          <div class="sb-uname"  id="sb-name">—</div>
+          <div class="sb-domain" id="sb-node">—</div>
         </div>
-        <button class="btn-out" onclick="logout()">Out</button>
+        <button class="btn btn-ghost btn-xs" onclick="logout()">Sign out</button>
       </div>
     </div>
   </aside>
 
-  <!-- BOTTOM NAV (mobile) -->
-  <nav class="bottom-nav">
-    <div class="bn-item on"  id="bni-feed"    onclick="nav('feed')">    <span class="ico">◈</span>Feed</div>
-    <div class="bn-item"     id="bni-explore" onclick="nav('explore')"> <span class="ico">⊹</span>Explore</div>
-    <div class="bn-item"     id="bni-nodes"   onclick="nav('nodes')">   <span class="ico">⬡</span>Nodes</div>
-    <div class="bn-item"     id="bni-profile" onclick="nav('profile')"> <span class="ico">◎</span>Profile</div>
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <div class="bnav-inner">
+      <div class="bni on"  id="bni-feed"      onclick="nav('feed')">     <span class="ico">◈</span>Feed</div>
+      <div class="bni"     id="bni-news"      onclick="nav('news')">     <span class="ico">📰</span>News</div>
+      <div class="bni"     id="bni-explore"   onclick="nav('explore')">  <span class="ico">⊹</span>Find</div>
+      <div class="bni"     id="bni-notifs"    onclick="nav('notifs')">   <span class="ico">🔔</span>Alerts<span class="bni-pip" id="bn-pip">0</span></div>
+      <div class="bni"     id="bni-profile"   onclick="nav('profile')">  <span class="ico">◎</span>Me</div>
+    </div>
   </nav>
 
   <!-- MAIN COLUMN -->
@@ -507,33 +839,47 @@ select.inp   { appearance: none; cursor: pointer; }
     <!-- FEED -->
     <div class="page show" id="pg-feed">
       <div class="col-head">
-        <span class="col-title">Feed</span>
-        <button class="btn-ghost sm" onclick="loadFeed()">↻ Refresh</button>
+        <span class="col-title" id="feed-title">Feed</span>
+        <div class="col-actions">
+          <button class="btn btn-ghost btn-sm" onclick="setFeedTab('following')" id="ftab-following">Following</button>
+          <button class="btn btn-ghost btn-sm" onclick="setFeedTab('node')"      id="ftab-node">Node</button>
+          <button class="btn btn-ghost btn-sm" onclick="setFeedTab('trending')"  id="ftab-trending">Trending</button>
+        </div>
       </div>
       <div class="compose">
-        <div class="ava" id="cmp-ava" style="width:34px;height:34px;font-size:13px;flex-shrink:0">?</div>
-        <div class="compose-body">
-          <textarea class="compose-ta" id="cmp-ta" placeholder="What's happening?" rows="3" oninput="onCompose()"></textarea>
-          <div class="compose-foot">
-            <span class="char-ct" id="cmp-ct">0 / 500</span>
-            <button class="btn-grad sm" onclick="doPost()">Post →</button>
+        <div class="ava" id="cmp-ava" style="width:34px;height:34px;font-size:12px;flex-shrink:0"></div>
+        <div class="compose-right">
+          <div class="cw-row" id="cw-row">
+            <input type="text" class="cw-input" id="cw-input" placeholder="Content warning…" maxlength="100">
+          </div>
+          <textarea class="compose-ta" id="cmp-ta" placeholder="What's on your mind?" rows="3" oninput="onCompose()"></textarea>
+          <div class="compose-footer">
+            <div class="compose-left-actions">
+              <span class="char-count" id="cmp-ct">0 / 500</span>
+              <button class="cw-btn" onclick="toggleCW()" title="Content warning">CW</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="doPost()">Post</button>
           </div>
         </div>
       </div>
-      <div class="scroll" id="feed-area">
-        <div class="loading-state"><div class="spinner"></div>Loading feed…</div>
-      </div>
+      <div class="scroll" id="feed-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="page" id="pg-news">
+      <div class="col-head"><span class="col-title">News</span></div>
+      <div class="scroll" id="news-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
     </div>
 
     <!-- EXPLORE -->
     <div class="page" id="pg-explore">
       <div class="col-head"><span class="col-title">Explore</span></div>
-      <div class="explore-bar">
-        <input type="text" class="inp" id="explore-id" placeholder="Node ID or domain">
-        <button class="btn-grad sm" onclick="doExplore()">Browse</button>
+      <div class="search-bar">
+        <input type="text" class="inp" id="search-inp" placeholder="Search posts and people…" onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="btn btn-primary btn-sm" onclick="doSearch()">Search</button>
       </div>
       <div class="scroll" id="explore-area">
-        <div class="empty"><div class="empty-ico">⊹</div>Enter a node ID or domain to explore its feed</div>
+        <div class="empty-state"><span class="empty-ico">⊹</span><p class="empty-msg">Search for posts or people on this node</p></div>
       </div>
     </div>
 
@@ -541,59 +887,70 @@ select.inp   { appearance: none; cursor: pointer; }
     <div class="page" id="pg-nodes">
       <div class="col-head">
         <span class="col-title">Nodes</span>
-        <button class="btn-grad sm" onclick="openModal('m-node')">+ Register</button>
+        <button class="btn btn-primary btn-sm" onclick="openM('m-node')">+ Register</button>
       </div>
-      <div class="tabs">
+      <div class="tabs" id="nodes-tabs">
         <div class="tab on" onclick="filterNodes(null,this)">All</div>
-        <div class="tab"    onclick="filterNodes(0,this)">Dark</div>
-        <div class="tab"    onclick="filterNodes(1,this)">Grey</div>
         <div class="tab"    onclick="filterNodes(2,this)">Light</div>
+        <div class="tab"    onclick="filterNodes(1,this)">Grey</div>
+        <div class="tab"    onclick="filterNodes(0,this)">Dark</div>
       </div>
-      <div class="scroll" id="nodes-area">
-        <div class="loading-state"><div class="spinner"></div>Loading nodes…</div>
+      <div class="scroll" id="nodes-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="page" id="pg-notifs">
+      <div class="col-head">
+        <span class="col-title">Notifications</span>
+        <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark all read</button>
       </div>
+      <div class="scroll" id="notifs-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
+    </div>
+
+    <!-- BOOKMARKS -->
+    <div class="page" id="pg-bookmarks">
+      <div class="col-head"><span class="col-title">Bookmarks</span></div>
+      <div class="scroll" id="bookmarks-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
     </div>
 
     <!-- PROFILE -->
     <div class="page" id="pg-profile">
       <div class="col-head">
         <span class="col-title">Profile</span>
-        <button class="btn-ghost sm" onclick="openModal('m-profile')">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="openEditProfile()">Edit</button>
       </div>
       <div class="scroll" id="profile-scroll">
-        <div class="profile-hero">
-          <div class="prf-ava-lg" id="prf-ava" style="width:68px;height:68px;font-size:24px">?</div>
+        <div class="profile-banner" id="prf-banner"></div>
+        <div class="profile-info">
+          <div class="prf-ava-wrap">
+            <div class="prf-ava" id="prf-ava"></div>
+          </div>
           <div class="prf-name"   id="prf-name">—</div>
-          <div class="prf-handle" id="prf-handle">—</div>
+          <div class="prf-handle" id="prf-handle"></div>
           <div class="prf-bio"    id="prf-bio"></div>
-          <div class="prf-stats">
-            <div><div class="stat-n" id="prf-followers">0</div><div class="stat-l">Followers</div></div>
-            <div><div class="stat-n" id="prf-following">0</div><div class="stat-l">Following</div></div>
+          <div class="prf-meta">
+            <div><div class="prf-stat-n" id="prf-followers">0</div><div class="prf-stat-l">Followers</div></div>
+            <div><div class="prf-stat-n" id="prf-following">0</div><div class="prf-stat-l">Following</div></div>
+            <div><div class="prf-stat-n" id="prf-posts">0</div><div class="prf-stat-l">Posts</div></div>
           </div>
-          <div id="prf-pro" style="display:none;margin-top:.75rem">
-            <span class="pill-badge pro"><span class="pip"></span>Pro</span>
-          </div>
+          <div class="prf-pills" id="prf-pills"></div>
         </div>
-        <div id="profile-posts">
-          <div class="loading-state"><div class="spinner"></div>Loading posts…</div>
-        </div>
+        <div id="profile-posts-area"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
       </div>
     </div>
 
     <!-- POST DETAIL -->
-    <div class="page" id="pg-post" style="flex-direction:column">
+    <div class="page" id="pg-post">
       <div class="col-head">
-        <button class="btn-ghost sm" onclick="back()">← Back</button>
+        <button class="btn btn-ghost btn-sm" onclick="back()">← Back</button>
         <span class="col-title">Post</span>
-        <span></span>
+        <span style="width:60px"></span>
       </div>
-      <div class="scroll" id="post-area">
-        <div class="loading-state"><div class="spinner"></div></div>
-      </div>
+      <div class="scroll" id="post-area"><div class="loading-row"><div class="spinner"></div></div></div>
       <div class="reply-bar">
-        <div class="ava" id="reply-ava" style="width:30px;height:30px;font-size:11px;flex-shrink:0">?</div>
-        <textarea class="reply-ta" id="reply-ta" placeholder="Write a reply…" rows="2"></textarea>
-        <button class="btn-grad sm" style="flex-shrink:0" onclick="doReply()">Reply →</button>
+        <div class="ava" id="reply-ava" style="width:30px;height:30px;font-size:11px;flex-shrink:0"></div>
+        <textarea class="reply-ta" id="reply-ta" placeholder="Write a reply…" rows="2" onkeydown="if(event.ctrlKey&&event.key==='Enter')doReply()"></textarea>
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0;align-self:flex-end" onclick="doReply()">Reply</button>
       </div>
     </div>
 
@@ -601,133 +958,877 @@ select.inp   { appearance: none; cursor: pointer; }
 
   <!-- RIGHT PANEL -->
   <div class="panel">
-    <div class="panel-sec">
-      <div class="panel-h">Connected Node</div>
+    <div class="panel-section">
+      <div class="panel-head">Connected Node</div>
       <div class="panel-body">
-        <div style="display:flex;align-items:center;gap:.6rem">
-          <div class="node-led grey" id="panel-led"></div>
+        <div class="panel-node-row">
+          <div class="panel-live-dot"></div>
           <div>
-            <div style="font-size:.8rem;font-weight:600;color:var(--c2)" id="panel-domain">—</div>
-            <div style="font-size:.65rem;color:var(--muted);margin-top:.15rem" id="panel-type">Node server</div>
+            <div class="panel-node-domain" id="panel-domain">—</div>
+            <div class="panel-node-type"   id="panel-type">Node server</div>
           </div>
         </div>
       </div>
     </div>
-    <div class="panel-sec" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
-      <div class="panel-h">Discover Nodes</div>
-      <div class="scroll" style="flex:1">
-        <div class="panel-body" id="panel-nodes">
-          <div class="loading-state" style="padding:.75rem 0"><div class="spinner"></div></div>
-        </div>
-      </div>
+    <div class="panel-head" style="padding-bottom:4px">Discover</div>
+    <div class="panel-scroll" id="panel-nodes">
+      <div class="loading-row" style="padding:10px 0"><div class="spinner"></div></div>
     </div>
   </div>
 
 </div><!-- /v-main -->
 </div><!-- /app -->
 
-<!-- MODALS -->
+<!-- ── MODALS ── -->
+
 <div class="modal-bg" id="m-node">
   <div class="modal">
-    <div class="modal-head"><span class="modal-title">Register a Node</span><button class="modal-x" onclick="closeModal('m-node')">✕</button></div>
+    <div class="modal-header"><span class="modal-title">Register a Node</span><button class="modal-close" onclick="closeM('m-node')">✕</button></div>
     <div class="modal-body">
-      <div class="f-group"><label class="f-label">Domain</label><input type="text" class="inp" id="mn-domain" placeholder="example.social"></div>
-      <div class="f-group"><label class="f-label">Display Name</label><input type="text" class="inp" id="mn-name" placeholder="My BTFLY Node"></div>
-      <div class="f-group"><label class="f-label">Description (optional)</label><input type="text" class="inp" id="mn-desc" placeholder="A friendly space for…"></div>
-      <div class="f-group">
-        <label class="f-label">Node Type</label>
+      <div class="modal-row"><label class="inp-label">Domain</label><input type="text" class="inp" id="mn-domain" placeholder="example.social"></div>
+      <div class="modal-row"><label class="inp-label">Display Name</label><input type="text" class="inp" id="mn-name" placeholder="My BTFLY Node"></div>
+      <div class="modal-row"><label class="inp-label">Description <span style="color:var(--t4)">(optional)</span></label><input type="text" class="inp" id="mn-desc" placeholder="A friendly space…"></div>
+      <div class="modal-row">
+        <label class="inp-label">Type</label>
         <select class="inp" id="mn-type">
-          <option value="1">Grey — discoverable, no replication</option>
-          <option value="2">Light — full federation &amp; replication</option>
+          <option value="2">Light — open, full federation</option>
+          <option value="1" selected>Grey — discoverable</option>
           <option value="0">Dark — private, unlisted</option>
         </select>
       </div>
-      <button class="btn-grad full" onclick="doRegisterNode()">Register →</button>
+      <button class="btn btn-primary btn-full" onclick="doRegisterNode()">Register →</button>
     </div>
   </div>
 </div>
 
 <div class="modal-bg" id="m-profile">
   <div class="modal">
-    <div class="modal-head"><span class="modal-title">Edit Profile</span><button class="modal-x" onclick="closeModal('m-profile')">✕</button></div>
+    <div class="modal-header"><span class="modal-title">Edit Profile</span><button class="modal-close" onclick="closeM('m-profile')">✕</button></div>
     <div class="modal-body">
-      <div class="f-group"><label class="f-label">Bio</label><textarea class="inp" id="mp-bio" rows="3" placeholder="Tell the network about yourself…"></textarea></div>
-      <div class="f-group"><label class="f-label">Avatar URL</label><input type="text" class="inp" id="mp-avatar" placeholder="https://…"></div>
-      <button class="btn-grad full" onclick="doSaveProfile()">Save →</button>
+      <div class="modal-row"><label class="inp-label">Bio</label><textarea class="inp" id="mp-bio" rows="3" placeholder="Tell the network about yourself…"></textarea></div>
+      <div class="modal-row"><label class="inp-label">Avatar URL</label><input type="text" class="inp" id="mp-avatar" placeholder="https://…"></div>
+      <div class="modal-row"><label class="inp-label">Banner URL</label><input type="text" class="inp" id="mp-banner" placeholder="https://… (wide image, ~1200×400)"></div>
+      <div class="modal-row"><label class="inp-label">Website</label><input type="text" class="inp" id="mp-website" placeholder="https://…"></div>
+      <div class="modal-row"><label class="inp-label">Location</label><input type="text" class="inp" id="mp-location" placeholder="Earth"></div>
+      <button class="btn btn-primary btn-full" onclick="doSaveProfile()">Save →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="m-edit-post">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Edit Post</span><button class="modal-close" onclick="closeM('m-edit-post')">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-row"><label class="inp-label">Content</label><textarea class="inp" id="ep-content" rows="5"></textarea></div>
+      <div class="modal-row"><label class="inp-label">Content Warning <span style="color:var(--t4)">(leave blank to remove)</span></label><input type="text" class="inp" id="ep-cw"></div>
+      <input type="hidden" id="ep-id">
+      <button class="btn btn-primary btn-full" onclick="doEditPost()">Save changes →</button>
     </div>
   </div>
 </div>
 
 <script>
-const CFG = { authBase:'https://api.login.btfly.social', defaultNode: location.hostname==='localhost'?'http://localhost:8080':'', maxLen:500 };
-const S = { nodeUrl:(localStorage.getItem('btfly_node')||CFG.defaultNode||'').replace(/\/$/,''), token:null, account:null, prevPage:'feed', activePostId:null, allNodes:[] };
+'use strict';
 
-const $cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', e => { $cursor.style.left=e.clientX+'px'; $cursor.style.top=e.clientY+'px'; });
-function cursorBig(el) { el.addEventListener('mouseenter',()=>$cursor.classList.add('big')); el.addEventListener('mouseleave',()=>$cursor.classList.remove('big')); }
-document.querySelectorAll('a, button').forEach(cursorBig);
+// ─── UTILS (must be first — boot IIFE uses these) ────────────────────────────
+const G   = id => document.getElementById(id);
+const esc = s  => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const setText = (id, val) => { const el = G(id); if (el) el.textContent = val; };
+const loadingHtml = () => `<div class="loading-row"><div class="spinner"></div>Loading…</div>`;
+const emptyHtml   = (ico, msg) => `<div class="empty-state"><span class="empty-ico">${ico}</span><p class="empty-msg">${esc(msg)}</p></div>`;
 
-(function boot() {
-  if (S.nodeUrl) { document.getElementById('inp-node').value=S.nodeUrl.replace(/^https?:\/\//,''); setNodeStatus(true,S.nodeUrl); }
-  const params=new URLSearchParams(location.search), btflyTok=params.get('btfly_token'), nodeKey=params.get('node_key');
-  if (btflyTok||nodeKey) {
-    document.getElementById('complete-sec').classList.add('show');
-    if (btflyTok){document.getElementById('inp-token').value=btflyTok;document.getElementById('badge-token').classList.add('show');}
-    if (nodeKey) {document.getElementById('inp-key').value=nodeKey;document.getElementById('badge-key').classList.add('show');}
-    history.replaceState({},'',location.pathname); showView('auth'); return;
+function timeAgo(d) {
+  const s = (Date.now() - d) / 1000;
+  if (s < 60)    return Math.floor(s) + 's';
+  if (s < 3600)  return Math.floor(s / 60) + 'm';
+  if (s < 86400) return Math.floor(s / 3600) + 'h';
+  return Math.floor(s / 86400) + 'd';
+}
+
+function setAva(id, url, name, size, fs) {
+  const el = G(id); if (!el) return;
+  el.style.width = size + 'px';
+  el.style.height = size + 'px';
+  el.style.fontSize = fs + 'px';
+  const init = (name || '?')[0].toUpperCase();
+  el.innerHTML = url
+    ? `<img src="${esc(url)}" alt="" onerror="this.parentNode.textContent='${init}'">`
+    : init;
+}
+
+const CFG = {
+  authBase:  'https://api.login.btfly.social',
+  defaultNode: location.hostname === 'localhost' ? 'http://localhost:8080' : '',
+  maxLen: 500,
+  newsFile: './news.json',
+};
+
+const S = {
+  nodeUrl:     (localStorage.getItem('btfly_node') || CFG.defaultNode || '').replace(/\/$/, ''),
+  token:       null,
+  account:     null,
+  prevPage:    'feed',
+  activePost:  null,
+  allNodes:    [],
+  feedTab:     'node',
+};
+
+// ─── BOOT ───────────────────────────────────────────────────────────────────
+
+(async function boot() {
+  if (S.nodeUrl) {
+    G('inp-node').value = S.nodeUrl.replace(/^https?:\/\//, '');
+    setNodeStatus(true, S.nodeUrl);
   }
-  const savedTok=localStorage.getItem('btfly_tok'), savedAcc=localStorage.getItem('btfly_acc');
-  if (savedTok&&savedAcc) { try{S.token=savedTok;S.account=JSON.parse(savedAcc);enterApp();return;}catch{} }
+
+  const ps      = new URLSearchParams(location.search);
+  const btflyTok = ps.get('btfly_token');
+  const nodeKey  = ps.get('node_key');
+
+  if (btflyTok || nodeKey) {
+    G('complete-sec').classList.add('show');
+    if (btflyTok) { G('inp-token').value = btflyTok; G('af-token').classList.add('show'); }
+    if (nodeKey)  { G('inp-key').value   = nodeKey;  G('af-key').classList.add('show'); }
+    history.replaceState({}, '', location.pathname);
+    showView('auth');
+    if (btflyTok && nodeKey) await doCompleteLogin();
+    return;
+  }
+
+  const st = localStorage.getItem('btfly_tok');
+  const sa = localStorage.getItem('btfly_acc');
+  if (st && sa) {
+    try { S.token = st; S.account = JSON.parse(sa); enterApp(); return; } catch {}
+  }
   showView('auth');
 })();
 
-function applyNode(){let v=document.getElementById('inp-node').value.trim();if(!v)return;if(!/^https?:\/\//.test(v))v='http://'+v;v=v.replace(/\/$/,'');S.nodeUrl=v;localStorage.setItem('btfly_node',v);setNodeStatus(true,v);toast('Node set → '+v.replace(/^https?:\/\//,''),'ok');}
-function setNodeStatus(ok,url){document.getElementById('ns-dot').className='ns-dot'+(ok?' ok':'');document.getElementById('ns-txt').textContent=ok?url.replace(/^https?:\/\//,''):'No node configured';}
-async function startLogin(){if(!S.nodeUrl){toast('Set a node URL first','err');return;}const returnUrl=location.origin+location.pathname,nodeId=await findCurrentNodeId();if(nodeId){try{const r=await anonFetch('POST',`/api/auth/node/${nodeId}/generate-key`,{returnUrl});location.href=r.cloudlightLoginUrl;return;}catch{}}revealComplete();window.open(`${CFG.authBase}/api/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`,'_blank');toast('Complete login in the new tab, then return here','inf');}
-function revealComplete(){document.getElementById('complete-sec').classList.add('show');}
-function toggleVis(id,btn){const inp=document.getElementById(id),h=inp.type==='password';inp.type=h?'text':'password';btn.textContent=h?'🙈':'👁';}
-async function findCurrentNodeId(){try{const nodes=await anonFetch('GET','/api/nodes');if(!Array.isArray(nodes)||!nodes.length)return null;const host=S.nodeUrl.replace(/^https?:\/\//,'').split(':')[0],match=nodes.find(n=>n.domain===host||n.domain===S.nodeUrl);return(match||nodes[0]).id;}catch{return null;}}
-async function doCompleteLogin(){const tok=document.getElementById('inp-token').value.trim(),key=document.getElementById('inp-key').value.trim(),domain=S.nodeUrl.replace(/^https?:\/\//,'').split(':')[0]||'localhost';if(!tok||!key){toast('Both fields are required','err');return;}if(!S.nodeUrl){toast('Set a node URL first','err');return;}try{const r=await anonFetch('POST','/api/auth/node/complete-login',{btflyToken:tok,nodeDomain:domain,key});S.token=r.nodeToken;S.account=r.nodeAccount;localStorage.setItem('btfly_tok',S.token);localStorage.setItem('btfly_acc',JSON.stringify(S.account));toast('Welcome, '+(S.account.username||'friend')+' 🦋','ok');enterApp();}catch(e){toast('Login failed: '+e.message,'err');}}
-function logout(){localStorage.removeItem('btfly_tok');localStorage.removeItem('btfly_acc');S.token=null;S.account=null;showView('auth');toast('Signed out','inf');}
-function enterApp(){showView('main');syncSidebar();loadFeed();loadNodesPanel();loadNodes();syncProfile();}
-function syncSidebar(){const a=S.account;if(!a)return;setText('sb-name',a.username||'—');setText('sb-node',a.nodeDomain||S.nodeUrl.replace(/^https?:\/\//,''));setAva('sb-ava',a.avatarUrl,a.username,32,12);setAva('cmp-ava',a.avatarUrl,a.username,34,13);setAva('reply-ava',a.avatarUrl,a.username,30,11);setText('panel-domain',S.nodeUrl.replace(/^https?:\/\//,''));}
-function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));document.getElementById('v-'+id).classList.add('show');}
-function nav(page){S.prevPage=page;document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));document.getElementById('pg-'+page).classList.add('show');document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('on'));const sbi=document.getElementById('sbi-'+page);if(sbi)sbi.classList.add('on');document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('on'));const bni=document.getElementById('bni-'+page);if(bni)bni.classList.add('on');if(page==='nodes')loadNodes();if(page==='profile')syncProfile();}
-function back(){nav(S.prevPage||'feed');}
-async function loadFeed(){const el=$('feed-area');el.innerHTML=loadingHtml();try{const r=await authFetch('GET','/api/feed?page=1&pageSize=40');renderPosts(r.posts||[],el,true);}catch(e){el.innerHTML=emptyHtml('◈',e.message);}}
-async function doExplore(){let val=$('explore-id').value.trim();if(!val)return;const el=$('explore-area');el.innerHTML=loadingHtml();try{let nodeId=val;if(!val.match(/^[0-9a-f-]{36}$/i)){const nodes=await anonFetch('GET','/api/nodes');const m=(nodes||[]).find(n=>n.domain===val);if(m)nodeId=m.id;}const r=await anonFetch('GET',`/api/nodes/${nodeId}/feed?page=1&pageSize=40`);renderPosts(r.posts||[],el,false);}catch(e){el.innerHTML=emptyHtml('⊹',e.message);}}
-function onCompose(){const len=$('cmp-ta').value.length,el=$('cmp-ct');el.textContent=`${len} / ${CFG.maxLen}`;el.className='char-ct'+(len>CFG.maxLen?' over':len>CFG.maxLen*.85?' warn':'');}
-async function doPost(){const txt=$('cmp-ta').value.trim();if(!txt)return;if(txt.length>CFG.maxLen){toast('Post too long','err');return;}try{await authFetch('POST','/api/posts',{content:txt});$('cmp-ta').value='';onCompose();toast('Posted 🦋','ok');loadFeed();}catch(e){toast('Failed: '+e.message,'err');}}
-function renderPosts(posts,container,actions){if(!posts.length){container.innerHTML=emptyHtml('◈','Nothing here yet');return;}container.innerHTML=posts.map((p,i)=>postHtml(p,actions,i)).join('');container.querySelectorAll('.post, button').forEach(cursorBig);}
-function postHtml(p,actions,idx=0){const a=p.author||{},ava=avaHtml(a.avatarUrl,a.username,34,13),ago=p.createdAt?timeAgo(new Date(p.createdAt)):'',rb=p.parentPostId?`<div class="post-reply-to">↳ reply to thread</div>`:'',act=actions?`<div class="post-actions"><button class="pa" onclick="openPost('${p.id}');event.stopPropagation()">💬 ${p.replyCount||0}</button><button class="pa" id="lbtn-${p.id}" data-liked="0" onclick="toggleLike('${p.id}',this);event.stopPropagation()">✦ ${p.likeCount||0}</button><button class="pa" onclick="copyLink('${p.id}');event.stopPropagation()">⊹ share</button></div>`:'';return`<div class="post" style="animation-delay:${idx*.04}s" onclick="openPost('${p.id}')">${rb}<div class="post-hd">${ava}<div class="post-meta"><div class="post-author">${esc(a.username||'—')}</div><div class="post-node">${esc(a.nodeDomain||'')}</div></div><div class="post-time">${ago}</div></div><div class="post-body">${esc(p.content)}</div>${act}</div>`;}
-async function openPost(id){S.activePostId=id;document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));$('pg-post').classList.add('show');$('post-area').innerHTML=loadingHtml();$('reply-ta').value='';try{const[post,replies]=await Promise.all([anonFetch('GET',`/api/posts/${id}`),anonFetch('GET',`/api/posts/${id}/replies?page=1&pageSize=60`)]);const rlist=replies.posts||[];$('post-area').innerHTML=`<div style="border-bottom:1px solid var(--border)">${postHtml(post,true)}</div><div style="padding:.6rem 1.3rem;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)">${rlist.length} replies</div>`+rlist.map((p,i)=>postHtml(p,true,i)).join('');}catch(e){$('post-area').innerHTML=emptyHtml('◈',e.message);}}
-async function doReply(){const txt=$('reply-ta').value.trim();if(!txt||!S.activePostId)return;try{await authFetch('POST','/api/posts',{content:txt,parentPostId:S.activePostId});$('reply-ta').value='';toast('Reply sent 🦋','ok');openPost(S.activePostId);}catch(e){toast('Failed: '+e.message,'err');}}
-async function toggleLike(postId,btn){const isLiked=btn.dataset.liked==='1';try{const r=await authFetch(isLiked?'DELETE':'POST',`/api/posts/${postId}/like`);btn.dataset.liked=isLiked?'0':'1';btn.classList.toggle('active',!isLiked);if(r)btn.innerHTML=`✦ ${r.likeCount||0}`;}catch(e){toast(e.message,'err');}}
-function copyLink(postId){navigator.clipboard.writeText(`${S.nodeUrl}/api/posts/${postId}`).then(()=>toast('Link copied','ok')).catch(()=>toast('Copy failed','err'));}
-const NT={0:'dark',1:'grey',2:'light'},NL={0:'Dark',1:'Grey',2:'Light'};
-async function loadNodes(){const el=$('nodes-area');el.innerHTML=loadingHtml();try{S.allNodes=await anonFetch('GET','/api/nodes')||[];renderNodes(S.allNodes,el);}catch(e){el.innerHTML=emptyHtml('⬡',e.message);}}
-function filterNodes(type,tab){document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('on'));tab.classList.add('on');renderNodes(type===null?S.allNodes:S.allNodes.filter(n=>n.serverType===type),$('nodes-area'));}
-function renderNodes(nodes,container){if(!nodes.length){container.innerHTML=emptyHtml('⬡','No nodes found');return;}container.innerHTML=nodes.map(n=>{const t=NT[n.serverType]||'grey';return`<div class="node-card" onclick="browseNode('${n.id}','${esc(n.domain)}')"><div class="node-led ${t}"></div><div class="node-info"><div class="node-domain">${esc(n.domain)}</div><div class="node-name">${esc(n.displayName||'')}${n.description?' · '+esc(n.description):''}</div></div><span class="pill-badge ${t}"><span class="pip"></span>${NL[n.serverType]||'?'}</span><span class="node-count">${n.memberCount||0}</span></div>`;}).join('');container.querySelectorAll('.node-card').forEach(cursorBig);}
-async function loadNodesPanel(){try{const nodes=await anonFetch('GET','/api/nodes'),el=$('panel-nodes');if(!nodes||!nodes.length){el.innerHTML='<div style="font-size:.72rem;color:var(--muted)">No nodes found</div>';return;}el.innerHTML=nodes.slice(0,6).map(n=>{const t=NT[n.serverType]||'grey';return`<div class="pnm" onclick="browseNode('${n.id}','${esc(n.domain)}')"><div class="node-led ${t}" style="width:6px;height:6px"></div><div class="pnm-d">${esc(n.domain)}</div><div class="pnm-c">${n.memberCount||0}</div></div>`;}).join('');}catch{}}
-function browseNode(id,domain){$('explore-id').value=domain||id;nav('explore');doExplore();}
-async function doRegisterNode(){const domain=$('mn-domain').value.trim(),name=$('mn-name').value.trim(),desc=$('mn-desc').value.trim(),type=parseInt($('mn-type').value);if(!domain||!name){toast('Domain & name required','err');return;}try{await authFetch('POST','/api/nodes',{domain,displayName:name,description:desc||null,serverType:type});closeModal('m-node');toast('Node registered 🦋','ok');loadNodes();loadNodesPanel();}catch(e){toast('Failed: '+e.message,'err');}}
-async function syncProfile(){const a=S.account;if(!a)return;setAva('prf-ava',a.avatarUrl,a.username,68,24);setText('prf-name',a.username||'—');setText('prf-handle',a.nodeDomain?`@${a.username}@${a.nodeDomain}`:`@${a.username||'?'}`);setText('prf-bio',a.bio||'');setText('prf-followers',a.followerCount||0);setText('prf-following',a.followingCount||0);$('prf-pro').style.display=a.isPro?'block':'none';const el=$('profile-posts');el.innerHTML=loadingHtml();try{const r=await authFetch('GET','/api/feed?page=1&pageSize=40');renderPosts(r.posts||[],el,true);}catch(e){el.innerHTML=emptyHtml('◎',e.message);}}
-async function doSaveProfile(){toast('Profile editing coming in next API version','inf');closeModal('m-profile');}
-async function authFetch(m,p,b){return _fetch(m,p,b,true);}
-async function anonFetch(m,p,b){return _fetch(m,p,b,false);}
-async function _fetch(method,path,body,auth){const h={'Content-Type':'application/json'};if(auth&&S.token)h['Authorization']='Bearer '+S.token;const opts={method,headers:h};if(body)opts.body=JSON.stringify(body);const res=await fetch(S.nodeUrl+path,opts);if(res.status===204)return null;const json=await res.json().catch(()=>({}));if(!res.ok)throw new Error(json.error||json.title||json.detail||String(res.status));return json;}
-function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
-function toast(msg,type='inf'){const icons={ok:'✦',err:'✕',inf:'◈'},el=Object.assign(document.createElement('div'),{className:`toast ${type}`,innerHTML:`<span>${icons[type]}</span>${esc(msg)}`});document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),4000);}
-const $=id=>document.getElementById(id);
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function timeAgo(d){const s=(Date.now()-d)/1000;if(s<60)return Math.floor(s)+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';}
-function avaHtml(url,name,size,fontSize){const init=(name||'?')[0].toUpperCase(),inner=url?`<img src="${esc(url)}" alt="">`:init;return`<div class="ava" style="width:${size}px;height:${size}px;font-size:${fontSize}px;flex-shrink:0">${inner}</div>`;}
-function setAva(id,url,name,size,fontSize){const el=$(id);if(!el)return;el.style.width=size+'px';el.style.height=size+'px';el.style.fontSize=fontSize+'px';const init=(name||'?')[0].toUpperCase();el.innerHTML=url?`<img src="${esc(url)}" alt="" onerror="this.parentNode.innerHTML='${init}'">`:init;}
-function setText(id,val){const el=$(id);if(el)el.textContent=val;}
-function loadingHtml(){return`<div class="loading-state"><div class="spinner"></div>Loading…</div>`;}
-function emptyHtml(ico,msg){return`<div class="empty"><div class="empty-ico">${ico}</div>${esc(msg)}</div>`;}
+// ─── AUTH ───────────────────────────────────────────────────────────────────
+
+function applyNode() {
+  let v = G('inp-node').value.trim();
+  if (!v) return;
+  if (!/^https?:\/\//.test(v)) v = 'https://' + v;
+  v = v.replace(/\/$/, '');
+  S.nodeUrl = v;
+  localStorage.setItem('btfly_node', v);
+  setNodeStatus(true, v);
+  toast('Node set', 'ok');
+}
+
+function setNodeStatus(ok, url) {
+  G('ns-dot').className = 'ns-dot' + (ok ? ' ok' : '');
+  G('ns-txt').textContent = ok ? url.replace(/^https?:\/\//, '') : 'No node configured';
+}
+
+async function startLogin() {
+  if (!S.nodeUrl) { toast('Set a node URL first', 'err'); return; }
+  const returnUrl = location.origin + location.pathname;
+  const nodeId = await findCurrentNodeId();
+  if (nodeId) {
+    try {
+      const r = await anonFetch('POST', `/api/auth/node/${nodeId}/generate-key`, { returnUrl });
+      location.href = r.cloudlightLoginUrl;
+      return;
+    } catch {}
+  }
+  showManual();
+  window.open(`${CFG.authBase}/api/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`, '_blank');
+  toast('Complete login in the new tab then return', 'inf');
+}
+
+function showManual() { G('complete-sec').classList.add('show'); }
+
+function togglePw(id, btn) {
+  const el = G(id), isPw = el.type === 'password';
+  el.type = isPw ? 'text' : 'password';
+  btn.textContent = isPw ? '🙈' : '👁';
+}
+
+async function findCurrentNodeId() {
+  try {
+    const nodes = await anonFetch('GET', '/api/nodes');
+    if (!Array.isArray(nodes) || !nodes.length) return null;
+    const host = S.nodeUrl.replace(/^https?:\/\//, '').split(':')[0];
+    const match = nodes.find(n => n.domain === host || n.domain === S.nodeUrl);
+    return (match || nodes[0]).id;
+  } catch { return null; }
+}
+
+async function doCompleteLogin() {
+  const tok    = G('inp-token').value.trim();
+  const key    = G('inp-key').value.trim();
+  const domain = S.nodeUrl.replace(/^https?:\/\//, '').split(':')[0] || 'localhost';
+  if (!tok || !key) { toast('Both fields are required', 'err'); return; }
+  if (!S.nodeUrl)   { toast('Set a node URL first', 'err'); return; }
+  try {
+    const r = await anonFetch('POST', '/api/auth/node/complete-login', { btflyToken: tok, nodeDomain: domain, key });
+    S.token   = r.nodeToken;
+    const na = r.nodeAccount || {};
+    if ('headerUrl' in na) na.bannerUrl = na.headerUrl;
+    S.account = na;
+    localStorage.setItem('btfly_tok', S.token);
+    localStorage.setItem('btfly_acc', JSON.stringify(S.account));
+    if (r.requiresUsernameSetup) {
+      enterApp();
+      G('overlay-username').classList.add('open');
+    } else {
+      toast('Welcome, ' + (S.account.username || 'friend') + ' 🦋', 'ok');
+      enterApp();
+    }
+  } catch (e) { toast('Login failed: ' + e.message, 'err'); }
+}
+
+// ─── USERNAME SETUP ──────────────────────────────────────────────────────────
+
+function previewUname(val) {
+  const el = G('uname-hint');
+  if (!val) { el.textContent = ''; el.className = 'uname-hint'; return; }
+  if (val.length < 2) { el.textContent = 'Too short'; el.className = 'uname-hint err'; return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(val)) { el.textContent = 'Letters, numbers and _ only'; el.className = 'uname-hint err'; return; }
+  const domain = S.account?.nodeDomain || S.nodeUrl.replace(/^https?:\/\//, '');
+  el.textContent = '@' + val + '@' + domain;
+  el.className = 'uname-hint ok';
+}
+
+async function doSetupUsername() {
+  const username = G('inp-uname').value.trim();
+  if (!username) { toast('Enter a username', 'err'); return; }
+  try {
+    const r = await authFetch('POST', '/api/auth/setup-username', { username });
+    S.account = { ...S.account, ...r };
+    localStorage.setItem('btfly_acc', JSON.stringify(S.account));
+    G('overlay-username').classList.remove('open');
+    syncSidebar(); syncProfile();
+    toast('Welcome, @' + username + ' 🦋', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ─── APP SHELL ───────────────────────────────────────────────────────────────
+
+function logout() {
+  localStorage.removeItem('btfly_tok');
+  localStorage.removeItem('btfly_acc');
+  S.token = null; S.account = null;
+  showView('auth');
+  toast('Signed out', 'inf');
+}
+
+function enterApp() {
+  showView('main');
+  syncSidebar();
+  setFeedTab('node');
+  loadNodesPanel();
+  loadNodes();
+  loadNews();
+  pollNotifs();
+}
+
+function syncSidebar() {
+  const a = S.account; if (!a) return;
+  setText('sb-name', a.username || '—');
+  setText('sb-node', a.nodeDomain || S.nodeUrl.replace(/^https?:\/\//, ''));
+  setAva('sb-ava',    a.avatarUrl, a.username, 30, 11);
+  setAva('cmp-ava',   a.avatarUrl, a.username, 34, 12);
+  setAva('reply-ava', a.avatarUrl, a.username, 30, 11);
+  setText('panel-domain', S.nodeUrl.replace(/^https?:\/\//, ''));
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+  G('v-' + id).classList.add('show');
+}
+
+function nav(page) {
+  S.prevPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  G('pg-' + page).classList.add('show');
+  document.querySelectorAll('.sb-item, .bni').forEach(i => i.classList.remove('on'));
+  const sb = G('sbi-' + page); if (sb) sb.classList.add('on');
+  const bn = G('bni-' + page); if (bn) bn.classList.add('on');
+  if (page === 'nodes')     loadNodes();
+  if (page === 'profile')   syncProfile();
+  if (page === 'notifs')    loadNotifs();
+  if (page === 'bookmarks') loadBookmarks();
+  if (page === 'news')      loadNews();
+}
+
+function back() { nav(S.prevPage || 'feed'); }
+
+// ─── FEED ────────────────────────────────────────────────────────────────────
+
+function setFeedTab(tab) {
+  S.feedTab = tab;
+  ['following','node','trending'].forEach(t => {
+    G('ftab-' + t).className = 'btn btn-sm ' + (t === tab ? 'btn-primary' : 'btn-ghost');
+  });
+  const labels = { following: 'Following', node: 'Node Feed', trending: 'Trending' };
+  setText('feed-title', labels[tab] || 'Feed');
+  loadFeed();
+}
+
+async function loadFeed() {
+  const el = G('feed-area');
+  el.innerHTML = loadingHtml();
+  try {
+    let r;
+    if (S.feedTab === 'following') {
+      r = await authFetch('GET', '/api/feed?page=1&pageSize=40');
+    } else if (S.feedTab === 'trending') {
+      const id = await findCurrentNodeId();
+      r = id ? await anonFetch('GET', `/api/nodes/${id}/trending?page=1&pageSize=40`) : { posts: [] };
+    } else {
+      const id = await findCurrentNodeId();
+      r = id ? await anonFetch('GET', `/api/nodes/${id}/feed?page=1&pageSize=40`) : { posts: [] };
+    }
+    renderPosts(r.posts || [], el, true);
+  } catch (e) { el.innerHTML = emptyHtml('◈', e.message); }
+}
+
+// ─── NEWS ────────────────────────────────────────────────────────────────────
+
+async function loadNews() {
+  const el = G('news-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const res = await fetch(CFG.newsFile);
+    if (!res.ok) throw new Error('news.json not found (HTTP ' + res.status + ')');
+    const data  = await res.json();
+    const items = Array.isArray(data) ? data : (data.items || []);
+    if (!items.length) { el.innerHTML = emptyHtml('📰', 'No news items yet'); return; }
+    el.innerHTML = items.map((n, i) => `
+      <div class="news-item" style="animation-delay:${i * .04}s">
+        ${n.tag   ? `<div class="news-tag">${esc(n.tag)}</div>` : ''}
+        <div class="news-title">${esc(n.title || '')}</div>
+        ${n.body  ? `<div class="news-body">${esc(n.body)}</div>` : ''}
+        <div class="news-footer">
+          ${n.date ? `<span class="news-date">${esc(n.date)}</span>` : ''}
+          ${n.link ? `<a class="news-link" href="${esc(n.link)}" target="_blank" rel="noopener">Read more →</a>` : ''}
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = `
+      <div class="news-empty">
+        <b>No news.json found.</b><br>
+        Create a <code>news.json</code> file in the same folder as this HTML file.
+        <br><br>Example format:<br>
+        <code>[{"tag":"Update","title":"v1.0 is live","body":"First release!","date":"2025-03-01","link":"https://btfly.social"}]</code>
+      </div>`;
+  }
+}
+
+// ─── EXPLORE / SEARCH ────────────────────────────────────────────────────────
+
+async function doSearch() {
+  const q  = G('search-inp').value.trim();
+  if (!q) return;
+  const el = G('explore-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const id = await findCurrentNodeId();
+    if (!id) throw new Error('No node configured');
+    const r  = await anonFetch('GET', `/api/nodes/${id}/search?q=${encodeURIComponent(q)}`);
+    let html = '';
+    if (r.accounts?.length) {
+      html += `<div class="result-section-hdr">People (${r.accounts.length})</div>`;
+      html += r.accounts.map(a => accountCardHtml(a)).join('');
+    }
+    if (r.posts?.length) {
+      html += `<div class="result-section-hdr">Posts (${r.posts.length})</div>`;
+      html += r.posts.map((p, i) => postHtml(p, true, i)).join('');
+    }
+    if (!html) html = emptyHtml('⊹', `No results for "${q}"`);
+    el.innerHTML = html;
+  } catch (e) { el.innerHTML = emptyHtml('⊹', e.message); }
+}
+
+function accountCardHtml(a) {
+  const init = (a.username || '?')[0].toUpperCase();
+  const ava  = a.avatarUrl ? `<img src="${esc(a.avatarUrl)}" alt="">` : init;
+  return `<div class="node-card">
+    <div class="ava" style="width:36px;height:36px;font-size:13px">${ava}</div>
+    <div class="node-info">
+      <div class="node-dom">@${esc(a.username)}</div>
+      <div class="node-desc">${esc(a.bio || a.nodeDomain || '')}</div>
+    </div>
+    <span style="font-size:12px;color:var(--t3)">${a.followerCount || 0} followers</span>
+  </div>`;
+}
+
+// ─── NODES ───────────────────────────────────────────────────────────────────
+
+async function loadNodes() {
+  const el = G('nodes-area');
+  el.innerHTML = loadingHtml();
+  try {
+    S.allNodes = await anonFetch('GET', '/api/nodes') || [];
+    renderNodes(S.allNodes, el);
+  } catch (e) { el.innerHTML = emptyHtml('⬡', e.message); }
+}
+
+function filterNodes(type, tab) {
+  document.querySelectorAll('#nodes-tabs .tab').forEach(t => t.classList.remove('on'));
+  tab.classList.add('on');
+  const filtered = type === null ? S.allNodes : S.allNodes.filter(n => n.serverType === type);
+  renderNodes(filtered, G('nodes-area'));
+}
+
+const NT = { 0: 'dark', 1: 'grey', 2: 'light' };
+const NL = { 0: 'Dark', 1: 'Grey', 2: 'Light' };
+
+function renderNodes(nodes, container) {
+  if (!nodes.length) { container.innerHTML = emptyHtml('⬡', 'No nodes found'); return; }
+  container.innerHTML = nodes.map(n => {
+    const t    = NT[n.serverType] || 'grey';
+    const icon = n.iconUrl ? `<img src="${esc(n.iconUrl)}" alt="">` : '⬡';
+    return `<div class="node-card" onclick="loadNodeFeed('${n.id}')">
+      <div class="node-icon">${icon}</div>
+      <div class="node-info">
+        <div class="node-dom">${esc(n.domain)}</div>
+        <div class="node-desc">${esc(n.displayName || '')}${n.description ? ' · ' + esc(n.description) : ''}</div>
+      </div>
+      <span class="node-badge ${t}">${NL[n.serverType] || '?'}</span>
+      <span class="node-members">${n.memberCount || 0}</span>
+    </div>`;
+  }).join('');
+}
+
+async function loadNodeFeed(nodeId) {
+  nav('explore');
+  const el = G('explore-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const r = await anonFetch('GET', `/api/nodes/${nodeId}/feed?page=1&pageSize=40`);
+    renderPosts(r.posts || [], el, false);
+  } catch (e) { el.innerHTML = emptyHtml('⊹', e.message); }
+}
+
+async function loadNodesPanel() {
+  try {
+    const nodes = await anonFetch('GET', '/api/nodes');
+    const el = G('panel-nodes');
+    if (!nodes?.length) { el.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--t3)">No nodes</div>'; return; }
+    el.innerHTML = nodes.slice(0, 10).map(n => {
+      const t = NT[n.serverType] || 'grey';
+      const dotColor = t === 'light' ? 'var(--green)' : t === 'grey' ? 'var(--accent)' : 'var(--t4)';
+      return `<div class="panel-node-item" onclick="loadNodeFeed('${n.id}')">
+        <div class="pni-dot" style="background:${dotColor}"></div>
+        <div class="pni-name">${esc(n.domain)}</div>
+        <div class="pni-count">${n.memberCount || 0}</div>
+      </div>`;
+    }).join('');
+  } catch {}
+}
+
+async function doRegisterNode() {
+  const domain = G('mn-domain').value.trim();
+  const name   = G('mn-name').value.trim();
+  const desc   = G('mn-desc').value.trim();
+  const type   = parseInt(G('mn-type').value);
+  if (!domain || !name) { toast('Domain and name are required', 'err'); return; }
+  try {
+    await authFetch('POST', '/api/nodes', { domain, displayName: name, description: desc || null, serverType: type });
+    closeM('m-node');
+    toast('Node registered 🦋', 'ok');
+    loadNodes(); loadNodesPanel();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ─── COMPOSE ─────────────────────────────────────────────────────────────────
+
+function onCompose() {
+  const len = G('cmp-ta').value.length;
+  const el  = G('cmp-ct');
+  el.textContent = `${len} / ${CFG.maxLen}`;
+  el.className = 'char-count' + (len > CFG.maxLen ? ' over' : len > CFG.maxLen * .85 ? ' warn' : '');
+}
+
+function toggleCW() {
+  const row = G('cw-row');
+  row.classList.toggle('show');
+  if (!row.classList.contains('show')) G('cw-input').value = '';
+}
+
+async function doPost() {
+  const content = G('cmp-ta').value.trim();
+  const cw      = G('cw-input').value.trim() || null;
+  if (!content) return;
+  if (content.length > CFG.maxLen) { toast('Post is too long', 'err'); return; }
+  try {
+    await authFetch('POST', '/api/posts', { content, contentWarning: cw, mediaUrl: null, parentPostId: null });
+    G('cmp-ta').value = ''; G('cw-input').value = '';
+    G('cw-row').classList.remove('show');
+    onCompose();
+    toast('Posted 🦋', 'ok');
+    loadFeed();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ─── POSTS ───────────────────────────────────────────────────────────────────
+
+function renderPosts(posts, container, actions) {
+  if (!posts.length) { container.innerHTML = emptyHtml('◈', 'Nothing here yet'); return; }
+  container.innerHTML = posts.map((p, i) => postHtml(p, actions, i)).join('');
+}
+
+function postHtml(p, actions, idx = 0) {
+  const a   = p.author || {};
+  const ava = `<div class="ava" style="width:36px;height:36px;font-size:13px;flex-shrink:0">${a.avatarUrl ? `<img src="${esc(a.avatarUrl)}" alt="" onerror="this.parentNode.textContent='${esc((a.username||'?')[0].toUpperCase())}'">` : esc((a.username || '?')[0].toUpperCase())}</div>`;
+  const ago    = p.createdAt ? timeAgo(new Date(p.createdAt)) : '';
+  const edited = p.editedAt  ? `<div class="post-edited">edited ${timeAgo(new Date(p.editedAt))}</div>` : '';
+  const isMe   = S.account && S.account.id === a.id;
+
+  let cwBar = '', cwBodyWrap = '', cwBodyClose = '';
+  if (p.contentWarning) {
+    cwBar      = `<div class="post-cw-bar" onclick="toggleCWReveal(this);event.stopPropagation()">⚠ ${esc(p.contentWarning)} — click to show</div>`;
+    cwBodyWrap = `<div class="post-cw-body" style="display:none">`;
+    cwBodyClose = `</div>`;
+  }
+
+  let reflyEmbed = '';
+  if (p.reflyOf && !p.reflyOf.isDeleted) {
+    reflyEmbed = `<div class="refly-embed" onclick="openPost('${p.reflyOf.id}');event.stopPropagation()">
+      <div class="refly-from">↩ @${esc(p.reflyOf.author?.username || '?')}</div>
+      <div class="refly-body">${esc((p.reflyOf.content || '').slice(0, 200))}${(p.reflyOf.content?.length || 0) > 200 ? '…' : ''}</div>
+    </div>`;
+  }
+
+  let actHtml = '';
+  if (actions) {
+    const likeC = p.isLikedByMe    ? ' liked'      : '';
+    const rflC  = p.isRefliedByMe  ? ' reflied'    : '';
+    const bmC   = p.isBookmarkedByMe ? ' bookmarked' : '';
+    actHtml = `<div class="post-actions">
+      <button class="pa"         onclick="openPost('${p.id}');event.stopPropagation()">💬 ${p.replyCount || 0}</button>
+      <button class="pa${likeC}" id="lk-${p.id}" onclick="toggleLike('${p.id}',this);event.stopPropagation()">♥ ${p.likeCount || 0}</button>
+      <button class="pa${rflC}"  id="rf-${p.id}" onclick="toggleRefly('${p.id}',this);event.stopPropagation()">↩ ${p.reflyCount || 0}</button>
+      <button class="pa${bmC}"   id="bm-${p.id}" onclick="toggleBm('${p.id}',this);event.stopPropagation()">🔖</button>
+      ${isMe ? `<button class="pa" onclick="openEditPost('${p.id}',this);event.stopPropagation()">✏</button>` : ''}
+    </div>`;
+  }
+
+  return `<div class="post" style="animation-delay:${idx * .03}s" data-pid="${p.id}" data-content="${esc(p.content)}" data-cw="${esc(p.contentWarning || '')}" onclick="openPost('${p.id}')">
+    <div class="post-top">
+      ${ava}
+      <div class="post-right">
+        <div class="post-name-row">
+          <span class="post-uname">${esc(a.username || '—')}</span>
+          <span class="post-handle">@${esc(a.username || '?')}@${esc(a.nodeDomain || '')}</span>
+          <span class="post-when">${ago}</span>
+        </div>
+        ${cwBar}
+        ${cwBodyWrap}<div class="post-body">${esc(p.content)}</div>${cwBodyClose}
+        ${reflyEmbed}
+        ${edited}
+      </div>
+    </div>
+    ${actHtml}
+  </div>`;
+}
+
+function toggleCWReveal(bar) {
+  const body = bar.nextElementSibling?.classList?.contains('post-cw-body') ? bar.nextElementSibling : bar.parentElement?.querySelector('.post-cw-body');
+  if (!body) return;
+  const visible = body.style.display !== 'none';
+  body.style.display = visible ? 'none' : 'block';
+  bar.innerHTML = visible ? `⚠ Content warning — click to show` : '▲ Hide content';
+}
+
+function openEditPost(postId, btn) {
+  // Walk up to the .post element to grab stored data
+  const postEl = btn.closest('.post');
+  const content = postEl ? postEl.dataset.content : '';
+  const cw      = postEl ? postEl.dataset.cw : '';
+  G('ep-id').value      = postId;
+  G('ep-content').value = content;
+  G('ep-cw').value      = cw;
+  openM('m-edit-post');
+}
+
+async function doEditPost() {
+  const id      = G('ep-id').value;
+  const content = G('ep-content').value.trim();
+  const cw      = G('ep-cw').value.trim() || null;
+  if (!content) { toast('Content required', 'err'); return; }
+  try {
+    await authFetch('PATCH', `/api/posts/${id}`, { content, contentWarning: cw });
+    closeM('m-edit-post');
+    toast('Post updated', 'ok');
+    if (S.activePost === id) openPost(id);
+    else loadFeed();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function openPost(id) {
+  S.activePost = id;
+  nav('post');
+  const el = G('post-area');
+  el.innerHTML = loadingHtml();
+  G('reply-ta').value = '';
+  try {
+    const [post, replies] = await Promise.all([
+      anonFetch('GET', `/api/posts/${id}`),
+      anonFetch('GET', `/api/posts/${id}/replies?page=1&pageSize=60`),
+    ]);
+    const rl = replies.posts || [];
+    const a  = post.author || {};
+    const ava = `<div class="ava" style="width:40px;height:40px;font-size:14px;flex-shrink:0">${a.avatarUrl ? `<img src="${esc(a.avatarUrl)}" alt="">` : esc((a.username||'?')[0].toUpperCase())}</div>`;
+    const isMe = S.account && S.account.id === a.id;
+
+    el.innerHTML = `
+      <div class="post-detail">
+        <div class="post-top">${ava}
+          <div class="post-right">
+            <div class="post-name-row">
+              <span class="post-uname">${esc(a.username||'?')}</span>
+              <span class="post-handle">@${esc(a.username||'?')}@${esc(a.nodeDomain||'')}</span>
+            </div>
+            ${post.contentWarning ? `<div class="post-cw-bar" onclick="toggleCWReveal(this)">⚠ ${esc(post.contentWarning)} — click to show</div><div class="post-cw-body" style="display:none">` : ''}
+            <div class="post-body">${esc(post.content)}</div>
+            ${post.contentWarning ? '</div>' : ''}
+            ${post.editedAt ? `<div class="post-edited">edited ${timeAgo(new Date(post.editedAt))}</div>` : ''}
+          </div>
+        </div>
+        <div class="post-detail-stats">
+          <span class="pd-stat"><b>${post.likeCount||0}</b> likes</span>
+          <span class="pd-stat"><b>${post.replyCount||0}</b> replies</span>
+          <span class="pd-stat"><b>${post.reflyCount||0}</b> reflys</span>
+          <span class="pd-stat" style="margin-left:auto;font-size:11px;color:var(--t4)">${post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''}</span>
+        </div>
+        <div class="post-actions" style="padding-top:4px">
+          <button class="pa ${post.isLikedByMe?'liked':''}" id="lk-detail" onclick="toggleLike('${id}',this)">♥ ${post.likeCount||0}</button>
+          <button class="pa ${post.isRefliedByMe?'reflied':''}" onclick="toggleRefly('${id}',this)">↩ Refly</button>
+          <button class="pa ${post.isBookmarkedByMe?'bookmarked':''}" onclick="toggleBm('${id}',this)">🔖 Bookmark</button>
+          ${isMe ? `<button class="pa" onclick="G('ep-id').value='${id}';G('ep-content').value=${JSON.stringify(post.content)};G('ep-cw').value=${JSON.stringify(post.contentWarning||'')};openM('m-edit-post')">✏ Edit</button>` : ''}
+        </div>
+      </div>
+      <div style="padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--border2)">${rl.length} repl${rl.length===1?'y':'ies'}</div>
+      ${rl.map((p, i) => postHtml(p, true, i)).join('')}`;
+  } catch (e) { el.innerHTML = emptyHtml('◈', e.message); }
+}
+
+async function doReply() {
+  const txt = G('reply-ta').value.trim();
+  if (!txt || !S.activePost) return;
+  try {
+    await authFetch('POST', '/api/posts', { content: txt, parentPostId: S.activePost, contentWarning: null, mediaUrl: null });
+    G('reply-ta').value = '';
+    toast('Reply sent 🦋', 'ok');
+    openPost(S.activePost);
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function toggleLike(postId, btn) {
+  const on = btn.classList.contains('liked');
+  try {
+    const r = await authFetch(on ? 'DELETE' : 'POST', `/api/posts/${postId}/like`);
+    btn.classList.toggle('liked', !on);
+    if (r) btn.innerHTML = `♥ ${r.likeCount || 0}`;
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function toggleRefly(postId, btn) {
+  const on = btn.classList.contains('reflied');
+  try {
+    const r = await authFetch(on ? 'DELETE' : 'POST', `/api/posts/${postId}/refly`);
+    btn.classList.toggle('reflied', !on);
+    if (r) btn.innerHTML = `↩ ${r.reflyCount || 0}`;
+    toast(on ? 'Unreflied' : 'Reflied 🦋', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function toggleBm(postId, btn) {
+  const on = btn.classList.contains('bookmarked');
+  try {
+    await authFetch(on ? 'DELETE' : 'POST', `/api/posts/${postId}/bookmark`);
+    btn.classList.toggle('bookmarked', !on);
+    toast(on ? 'Bookmark removed' : 'Bookmarked', 'ok');
+    if (!on) loadBookmarks(); // refresh bookmarks if we're there
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+
+const NOTIF_ICO  = { 0:'♥', 1:'💬', 2:'👤', 3:'@', 4:'↩' };
+const NOTIF_VERB = { 0:'liked your post', 1:'replied to your post', 2:'followed you', 3:'mentioned you', 4:'reflied your post' };
+
+async function loadNotifs() {
+  const el = G('notifs-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const r = await authFetch('GET', '/api/notifications?page=1&pageSize=50');
+    const items = r.notifications || [];
+    if (!items.length) { el.innerHTML = emptyHtml('🔔', 'No notifications yet'); return; }
+    el.innerHTML = items.map((n, i) => {
+      const ago  = n.createdAt ? timeAgo(new Date(n.createdAt)) : '';
+      const verb = NOTIF_VERB[n.type] || '';
+      const ico  = NOTIF_ICO[n.type]  || '●';
+      const quote = n.post?.content
+        ? `<div class="notif-quote">${esc(n.post.content.slice(0, 80))}${n.post.content.length > 80 ? '…' : ''}</div>`
+        : '';
+      return `<div class="notif${n.isRead ? '' : ' unread'}" style="animation-delay:${i*.03}s" onclick="${n.post ? `openPost('${n.post.id}')` : ''}">
+        <div class="notif-icon">${ico}</div>
+        <div class="notif-body">
+          <div class="notif-text"><b>${esc(n.actor?.username || '?')}</b> ${verb}</div>
+          ${quote}
+          <div class="notif-time">${ago}</div>
+        </div>
+      </div>`;
+    }).join('');
+    setTimeout(() => authFetch('POST', '/api/notifications/mark-all-read').catch(() => {}), 2000);
+    updateNotifBadge(0);
+  } catch (e) { el.innerHTML = emptyHtml('🔔', e.message); }
+}
+
+async function markAllRead() {
+  try {
+    await authFetch('POST', '/api/notifications/mark-all-read');
+    updateNotifBadge(0);
+    loadNotifs();
+    toast('All read', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function pollNotifs() {
+  if (!S.token) return;
+  try {
+    const count = await authFetch('GET', '/api/notifications/unread-count');
+    if (typeof count === 'number') updateNotifBadge(count);
+  } catch {}
+  setTimeout(pollNotifs, 30000);
+}
+
+function updateNotifBadge(n) {
+  const show = n > 0;
+  const txt  = n > 99 ? '99+' : String(n);
+  const sb = G('sb-pip'), bn = G('bn-pip');
+  if (sb) { sb.textContent = txt; sb.classList.toggle('show', show); }
+  if (bn) { bn.textContent = txt; bn.classList.toggle('show', show); }
+}
+
+// ─── BOOKMARKS ───────────────────────────────────────────────────────────────
+
+async function loadBookmarks() {
+  const el = G('bookmarks-area');
+  el.innerHTML = loadingHtml();
+  try {
+    const r = await authFetch('GET', '/api/bookmarks?page=1&pageSize=40');
+    renderPosts(r.posts || [], el, true);
+  } catch (e) { el.innerHTML = emptyHtml('🔖', e.message); }
+}
+
+// ─── PROFILE ─────────────────────────────────────────────────────────────────
+
+async function syncProfile() {
+  const a = S.account; if (!a) return;
+
+  // Banner
+  const bannerEl = G('prf-banner');
+  if (a.bannerUrl) {
+    bannerEl.innerHTML = `<img src="${esc(a.bannerUrl)}" alt="" onerror="this.innerHTML=''">`;
+  } else {
+    bannerEl.innerHTML = '';
+  }
+
+  // Avatar
+  const pav = G('prf-ava');
+  if (a.avatarUrl) {
+    pav.innerHTML = `<img src="${esc(a.avatarUrl)}" alt="" onerror="this.parentNode.textContent='${esc((a.username||'?')[0].toUpperCase())}'">`;
+  } else {
+    pav.textContent = (a.username || '?')[0].toUpperCase();
+  }
+
+  setText('prf-name',      a.username || '—');
+  setText('prf-handle',    `@${a.username || '?'}@${a.nodeDomain || S.nodeUrl.replace(/^https?:\/\//, '')}`);
+  setText('prf-bio',       a.bio || '');
+  setText('prf-followers', a.followerCount || 0);
+  setText('prf-following', a.followingCount || 0);
+  setText('prf-posts',     a.postCount || 0);
+
+  let pills = '';
+  if (a.isPro)      pills += '<span class="pill pro">Pro</span>';
+  if (a.isNodeAdmin) pills += '<span class="pill admin">Admin</span>';
+  G('prf-pills').innerHTML = pills;
+
+  // Posts
+  const postsEl = G('profile-posts-area');
+  postsEl.innerHTML = loadingHtml();
+  try {
+    const nodeId = await findCurrentNodeId();
+    if (nodeId && a.username) {
+      const r = await authFetch('GET', `/api/nodes/${nodeId}/accounts/${encodeURIComponent(a.username)}/posts?page=1&pageSize=40`);
+      renderPosts(r.posts || [], postsEl, true);
+    } else {
+      const r = await authFetch('GET', '/api/feed?page=1&pageSize=40');
+      renderPosts(r.posts || [], postsEl, true);
+    }
+  } catch (e) { postsEl.innerHTML = emptyHtml('◎', e.message); }
+}
+
+function openEditProfile() {
+  const a = S.account || {};
+  G('mp-bio').value      = a.bio || '';
+  G('mp-avatar').value   = a.avatarUrl || '';
+  G('mp-banner').value   = a.bannerUrl || '';
+  G('mp-website').value  = a.websiteUrl || '';
+  G('mp-location').value = a.location || '';
+  openM('m-profile');
+}
+
+async function doSaveProfile() {
+  const bio       = G('mp-bio').value.trim()      || null;
+  const avatarUrl = G('mp-avatar').value.trim()   || null;
+  const bannerUrl = G('mp-banner').value.trim()   || null;
+  const websiteUrl = G('mp-website').value.trim() || null;
+  const location  = G('mp-location').value.trim() || null;
+  try {
+    const r = await authFetch('PATCH', '/api/accounts/me', { bio, avatarUrl, headerUrl: bannerUrl, websiteUrl, location });
+    const norm = { ...r }; if ('headerUrl' in norm) { norm.bannerUrl = norm.headerUrl; }
+    S.account = { ...S.account, ...norm };
+    localStorage.setItem('btfly_acc', JSON.stringify(S.account));
+    closeM('m-profile');
+    toast('Profile updated', 'ok');
+    syncSidebar(); syncProfile();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ─── HTTP ─────────────────────────────────────────────────────────────────────
+
+async function authFetch(m, p, b) { return _fetch(m, p, b, true); }
+async function anonFetch(m, p, b) { return _fetch(m, p, b, false); }
+
+async function _fetch(method, path, body, auth) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (auth && S.token) headers['Authorization'] = 'Bearer ' + S.token;
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res  = await fetch(S.nodeUrl + path, opts);
+  if (res.status === 204) return null;
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || json.title || json.detail || `HTTP ${res.status}`);
+  return json;
+}
+
+// ─── MODALS ──────────────────────────────────────────────────────────────────
+
+function openM(id)  { G(id).classList.add('open'); }
+function closeM(id) { G(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
+);
+
+// ─── TOASTS ──────────────────────────────────────────────────────────────────
+
+function toast(msg, type = 'inf') {
+  const icons = { ok: '✓', err: '✕', inf: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]}</span>${esc(msg)}`;
+  G('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// (utils defined at top of script)
 </script>
 </body>
 </html>
