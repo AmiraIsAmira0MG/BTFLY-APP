@@ -525,11 +525,17 @@ select.inp { appearance: none; cursor: pointer; }
 
 /* ── PROFILE ── */
 .profile-banner {
-  height: 88px; flex-shrink: 0;
-  background: var(--surface2);
+  height: 100px; flex-shrink: 0;
+  background: linear-gradient(135deg, #1a1030 0%, #0d1a2e 40%, #1a0d2e 100%);
   position: relative; overflow: hidden;
 }
-.profile-banner img { width: 100%; height: 100%; object-fit: cover; }
+.profile-banner::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(180,142,255,0.18) 0%, rgba(93,232,212,0.10) 60%, rgba(247,197,255,0.08) 100%);
+  pointer-events: none;
+}
+.profile-banner img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
 .profile-info { padding: 10px 14px 14px; border-bottom: 1px solid var(--border); }
 .prf-ava-wrap { margin-top: -34px; margin-bottom: 8px; }
 .prf-ava {
@@ -1001,6 +1007,7 @@ select.inp { appearance: none; cursor: pointer; }
     <div class="modal-body">
       <div class="modal-row"><label class="inp-label">Bio</label><textarea class="inp" id="mp-bio" rows="3" placeholder="Tell the network about yourself…"></textarea></div>
       <div class="modal-row"><label class="inp-label">Avatar URL</label><input type="text" class="inp" id="mp-avatar" placeholder="https://…"></div>
+      <div class="modal-row"><label class="inp-label">Banner URL</label><input type="text" class="inp" id="mp-banner" placeholder="https://… (wide image, ~1200×400)"></div>
       <div class="modal-row"><label class="inp-label">Website</label><input type="text" class="inp" id="mp-website" placeholder="https://…"></div>
       <div class="modal-row"><label class="inp-label">Location</label><input type="text" class="inp" id="mp-location" placeholder="Earth"></div>
       <button class="btn btn-primary btn-full" onclick="doSaveProfile()">Save →</button>
@@ -1157,7 +1164,9 @@ async function doCompleteLogin() {
   try {
     const r = await anonFetch('POST', '/api/auth/node/complete-login', { btflyToken: tok, nodeDomain: domain, key });
     S.token   = r.nodeToken;
-    S.account = r.nodeAccount;
+    const na = r.nodeAccount || {};
+    if ('headerUrl' in na) na.bannerUrl = na.headerUrl;
+    S.account = na;
     localStorage.setItem('btfly_tok', S.token);
     localStorage.setItem('btfly_acc', JSON.stringify(S.account));
     if (r.requiresUsernameSetup) {
@@ -1713,6 +1722,14 @@ async function loadBookmarks() {
 async function syncProfile() {
   const a = S.account; if (!a) return;
 
+  // Banner
+  const bannerEl = G('prf-banner');
+  if (a.bannerUrl) {
+    bannerEl.innerHTML = `<img src="${esc(a.bannerUrl)}" alt="" onerror="this.innerHTML=''">`;
+  } else {
+    bannerEl.innerHTML = '';
+  }
+
   // Avatar
   const pav = G('prf-ava');
   if (a.avatarUrl) {
@@ -1752,6 +1769,7 @@ function openEditProfile() {
   const a = S.account || {};
   G('mp-bio').value      = a.bio || '';
   G('mp-avatar').value   = a.avatarUrl || '';
+  G('mp-banner').value   = a.bannerUrl || '';
   G('mp-website').value  = a.websiteUrl || '';
   G('mp-location').value = a.location || '';
   openM('m-profile');
@@ -1760,11 +1778,13 @@ function openEditProfile() {
 async function doSaveProfile() {
   const bio       = G('mp-bio').value.trim()      || null;
   const avatarUrl = G('mp-avatar').value.trim()   || null;
+  const bannerUrl = G('mp-banner').value.trim()   || null;
   const websiteUrl = G('mp-website').value.trim() || null;
   const location  = G('mp-location').value.trim() || null;
   try {
-    const r = await authFetch('PATCH', '/api/accounts/me', { bio, avatarUrl, headerUrl: null, websiteUrl, location });
-    S.account = { ...S.account, ...r };
+    const r = await authFetch('PATCH', '/api/accounts/me', { bio, avatarUrl, headerUrl: bannerUrl, websiteUrl, location });
+    const norm = { ...r }; if ('headerUrl' in norm) { norm.bannerUrl = norm.headerUrl; }
+    S.account = { ...S.account, ...norm };
     localStorage.setItem('btfly_acc', JSON.stringify(S.account));
     closeM('m-profile');
     toast('Profile updated', 'ok');
