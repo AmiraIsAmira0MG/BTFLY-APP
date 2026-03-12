@@ -1,0 +1,22 @@
+[
+  {
+    "tag": "Release",
+    "title": "BTFLY v0.2 — username setup, notifications & reflys",
+    "body": "New in this release: first-time users are now prompted to choose a username. Added notifications (likes, replies, follows, mentions, reflys), bookmarks, refly/unrefly, post editing, content warnings, search, trending feed, and a news tab (you're looking at it). The backend has been significantly expanded — see the GitHub for the full changelog.",
+    "date": "2025-03-12",
+    "link": "https://github.com/btfly-social"
+  },
+  {
+    "tag": "Docs",
+    "title": "API documentation is now live",
+    "body": "Swagger UI is available on any running node at /swagger. The full endpoint reference covers auth, posts, accounts, notifications, search, nodes and moderation.",
+    "date": "2025-03-10"
+  },
+  {
+    "tag": "Network",
+    "title": "First public Light node accepting registrations",
+    "body": "btfly-node-testing.up.railway.app is open for signups. Light nodes replicate posts from across the network so you see a broader feed from day one.",
+    "date": "2025-03-09",
+    "link": "https://btfly-node-testing.up.railway.app"
+  }
+]
