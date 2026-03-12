@@ -523,11 +523,14 @@ select.inp { appearance: none; cursor: pointer; }
 .node-badge.dark  { color: var(--t3); }
 .node-members { font-size: 12px; color: var(--t4); flex-shrink: 0; }
 
+<!-- COPY THIS SECTION AND REPLACE YOUR EXISTING PROFILE CSS SECTION IN THE <style> TAG -->
+
 /* ── PROFILE ── */
 .profile-banner {
   height: 100px; flex-shrink: 0;
   background: linear-gradient(135deg, #1a1030 0%, #0d1a2e 40%, #1a0d2e 100%);
   position: relative; overflow: hidden;
+  z-index: 1;
 }
 .profile-banner::after {
   content: '';
@@ -535,17 +538,36 @@ select.inp { appearance: none; cursor: pointer; }
   background: linear-gradient(135deg, rgba(180,142,255,0.18) 0%, rgba(93,232,212,0.10) 60%, rgba(247,197,255,0.08) 100%);
   pointer-events: none;
 }
-.profile-banner img { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
-.profile-info { padding: 10px 14px 14px; border-bottom: 1px solid var(--border); }
-.prf-ava-wrap { margin-top: -34px; margin-bottom: 8px; }
+.profile-banner img { 
+  width: 100%; height: 100%; object-fit: cover; 
+  position: relative; z-index: 1; 
+}
+.profile-info { 
+  padding: 10px 14px 14px; 
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+}
+.prf-ava-wrap { 
+  margin-top: -34px; 
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 3;
+}
 .prf-ava {
   width: 68px; height: 68px; border-radius: 50%;
   border: 3px solid var(--bg);
   background: var(--surface3);
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; font-weight: 700; color: var(--t1); overflow: hidden;
+  position: relative;
+  z-index: 4;
 }
-.prf-ava img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.prf-ava img { 
+  width: 100%; height: 100%; object-fit: cover; 
+  border-radius: 50%; 
+}
 .prf-name   { font-size: 17px; font-weight: 700; color: var(--t1); }
 .prf-handle { font-size: 13px; color: var(--t3); margin-top: 1px; }
 .prf-bio    { font-size: 13px; color: var(--t2); margin-top: 9px; line-height: 1.6; }
